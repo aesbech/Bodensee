@@ -83,12 +83,17 @@ namespace BodenseeTourismus.Core
         
         // Bonus euro feature
         public bool UseBonusEuro { get; set; } = true; // Some attractions pay €1 more than pips shown
-        
+
         // Give Tour settings
         public bool GiveTourAffectsWholeBus { get; set; } = false; // If true, Give Tour affects all tourists
-        
+
         // Manual attraction order
         public bool ManualAttractionOrder { get; set; } = false; // If true, player chooses attraction visit order
+
+        // Game balance settings
+        public int TouristPoolSizePerCategory { get; set; } = 8; // Number of tourists per color (default: 32 total)
+        public int MarketRefillAmount { get; set; } = 2; // Number of attractions to show per category
+        public int ContractorDiscountAmount { get; set; } = 1; // Discount amount for Contractor action
         
         // Language settings
         public enum AttractionLanguage
@@ -157,6 +162,11 @@ namespace BodenseeTourismus.Core
                 { "GiveTourAffectsWholeBus", GiveTourAffectsWholeBus },
                 { "ManualAttractionOrder", ManualAttractionOrder },
 
+                // Game balance
+                { "TouristPoolSizePerCategory", TouristPoolSizePerCategory },
+                { "MarketRefillAmount", MarketRefillAmount },
+                { "ContractorDiscountAmount", ContractorDiscountAmount },
+
                 // Language
                 { "Language", Language.ToString() }
             };
@@ -198,6 +208,11 @@ namespace BodenseeTourismus.Core
             if (dict.ContainsKey("UseBonusEuro")) UseBonusEuro = Convert.ToBoolean(dict["UseBonusEuro"]);
             if (dict.ContainsKey("GiveTourAffectsWholeBus")) GiveTourAffectsWholeBus = Convert.ToBoolean(dict["GiveTourAffectsWholeBus"]);
             if (dict.ContainsKey("ManualAttractionOrder")) ManualAttractionOrder = Convert.ToBoolean(dict["ManualAttractionOrder"]);
+
+            // Game balance
+            if (dict.ContainsKey("TouristPoolSizePerCategory")) TouristPoolSizePerCategory = Convert.ToInt32(dict["TouristPoolSizePerCategory"]);
+            if (dict.ContainsKey("MarketRefillAmount")) MarketRefillAmount = Convert.ToInt32(dict["MarketRefillAmount"]);
+            if (dict.ContainsKey("ContractorDiscountAmount")) ContractorDiscountAmount = Convert.ToInt32(dict["ContractorDiscountAmount"]);
 
             // Language
             if (dict.ContainsKey("Language"))
@@ -390,9 +405,9 @@ namespace BodenseeTourismus.Core
             }
         }
 
-        public void Refill(AttractionCategory category)
+        public void Refill(AttractionCategory category, int maxCount = 2)
         {
-            while (AvailableAttractions[category].Count < 2 && Decks[category].Count > 0)
+            while (AvailableAttractions[category].Count < maxCount && Decks[category].Count > 0)
             {
                 AvailableAttractions[category].Add(Decks[category].Dequeue());
             }

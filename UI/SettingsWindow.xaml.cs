@@ -66,6 +66,11 @@ namespace BodenseeTourismus.UI
             // Load advanced features
             GiveTourWholeBusCheckBox.IsChecked = Settings.GiveTourAffectsWholeBus;
             ManualAttractionOrderCheckBox.IsChecked = Settings.ManualAttractionOrder;
+
+            // Load game balance settings
+            TouristPoolSizeBox.Text = Settings.TouristPoolSizePerCategory.ToString();
+            MarketRefillAmountBox.Text = Settings.MarketRefillAmount.ToString();
+            ContractorDiscountBox.Text = Settings.ContractorDiscountAmount.ToString();
         }
 
         private void ApplyButton_Click(object sender, RoutedEventArgs e)
@@ -110,6 +115,11 @@ namespace BodenseeTourismus.UI
                 // Advanced features
                 Settings.GiveTourAffectsWholeBus = GiveTourWholeBusCheckBox.IsChecked ?? false;
                 Settings.ManualAttractionOrder = ManualAttractionOrderCheckBox.IsChecked ?? false;
+
+                // Game balance settings
+                Settings.TouristPoolSizePerCategory = ParseInt(TouristPoolSizeBox.Text, "Tourist Pool Size");
+                Settings.MarketRefillAmount = ParseInt(MarketRefillAmountBox.Text, "Market Refill Amount");
+                Settings.ContractorDiscountAmount = ParseInt(ContractorDiscountBox.Text, "Contractor Discount");
 
                 Applied = true;
                 DialogResult = true;

@@ -396,18 +396,19 @@ namespace BodenseeTourismus.UI
                     if (attraction.Category == AttractionCategory.Gray)
                         _gameState.Market.RefillGray();
                     else
-                        _gameState.Market.Refill(attraction.Category);
+                        _gameState.Market.Refill(attraction.Category, _gameState.Settings.MarketRefillAmount);
                 }
             }
         }
 
         private void HandleContractor(City city)
         {
-            var buildDialog = new BuildAttractionDialog(_gameState, city.Name, 1); // €1 discount
+            int discount = _gameSettings.ContractorDiscountAmount;
+            var buildDialog = new BuildAttractionDialog(_gameState, city.Name, discount);
             if (buildDialog.ShowDialog() == true)
             {
                 var attraction = buildDialog.SelectedAttraction;
-                if (_engine.BuildAttraction(attraction, city.Name, 1))
+                if (_engine.BuildAttraction(attraction, city.Name, discount))
                 {
                     string attractionName = attraction.GetName(_gameState.Settings.Language);
                     Log($"Built {attractionName} in {city.Name} with Contractor discount");
@@ -424,7 +425,7 @@ namespace BodenseeTourismus.UI
                     if (attraction.Category == AttractionCategory.Gray)
                         _gameState.Market.RefillGray();
                     else
-                        _gameState.Market.Refill(attraction.Category);
+                        _gameState.Market.Refill(attraction.Category, _gameState.Settings.MarketRefillAmount);
                 }
             }
         }

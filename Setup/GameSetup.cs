@@ -322,7 +322,7 @@ namespace BodenseeTourismus.Setup
                 }
                 else
                 {
-                    state.Market.Refill(category); // 2 per color category
+                    state.Market.Refill(category, state.Settings.MarketRefillAmount);
                 }
             }
         }
@@ -330,11 +330,14 @@ namespace BodenseeTourismus.Setup
         private void InitializeTouristPool(GameState state)
         {
             int touristId = 1;
-            
-            // Create 8 dice of each color (32 total tourists)
+
+            // Create tourists of each color (configurable pool size)
             foreach (AttractionCategory category in Enum.GetValues(typeof(AttractionCategory)))
             {
-                for (int i = 0; i < 8; i++)
+                // Skip Gray category - tourists don't have gray category
+                if (category == AttractionCategory.Gray) continue;
+
+                for (int i = 0; i < state.Settings.TouristPoolSizePerCategory; i++)
                 {
                     var tourist = new Tourist(touristId++, category, 0);
                     state.TouristPool.Enqueue(tourist);

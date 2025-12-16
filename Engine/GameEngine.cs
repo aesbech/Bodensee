@@ -327,7 +327,7 @@ namespace BodenseeTourismus.Engine
                 .Select(c => c.Value)
                 .Distinct())
             {
-                _state.Market.Refill(category);
+                _state.Market.Refill(category, _state.Settings.MarketRefillAmount);
             }
 
             // Refill tourists based on mode
