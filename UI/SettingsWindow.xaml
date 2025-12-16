@@ -84,10 +84,10 @@
                     
                     <StackPanel Orientation="Horizontal" Margin="0,5">
                         <TextBlock Text="Zentrum Pips Bonus:" Width="150" VerticalAlignment="Center"/>
-                        <TextBox x:Name="ZentrumPipsBox" Width="80" Text="2"/>
+                        <TextBox x:Name="ZentrumPipsBox" Width="80" Text="1"/>
                         <TextBlock Text="pips" Margin="5,0,0,0" VerticalAlignment="Center"/>
                     </StackPanel>
-                    <TextBlock Text="How many pips Centers add to matching tourists" 
+                    <TextBlock Text="How many pips Centers add to matching tourists"
                                FontSize="10" Foreground="Gray" Margin="20,0,0,5" TextWrapping="Wrap"/>
                     
                     <StackPanel Orientation="Horizontal" Margin="0,5">
@@ -115,28 +115,26 @@
                 </StackPanel>
             </GroupBox>
             
-            <!-- Language Settings -->
-            <GroupBox Header="Language Settings" Padding="10" Margin="0,0,0,15">
+            <!-- Language & Refill Settings -->
+            <GroupBox Header="Language & Refill Settings" Padding="10" Margin="0,0,0,15">
                 <StackPanel>
                     <TextBlock Text="Attraction Names:" FontWeight="Bold" Margin="0,5,0,5"/>
-                    <RadioButton x:Name="LanguageEnglishRadio" Content="English" 
+                    <RadioButton x:Name="LanguageEnglishRadio" Content="English"
                                  GroupName="Language" Margin="0,5"/>
-                    <RadioButton x:Name="LanguageGermanRadio" Content="German" 
+                    <RadioButton x:Name="LanguageGermanRadio" Content="German"
                                  GroupName="Language" IsChecked="True" Margin="0,5"/>
-                </StackPanel>
-            </GroupBox>
-                    
+
                     <Separator Margin="0,10"/>
-                    
+
                     <TextBlock Text="Tourist Refill Mode:" FontWeight="Bold" Margin="0,5,0,5"/>
-                    <RadioButton x:Name="RefillMissingRadio" Content="Fill Missing Slots (Original Rules)" 
+                    <RadioButton x:Name="RefillMissingRadio" Content="Fill Missing Slots (Original Rules)"
                                  GroupName="RefillMode" IsChecked="True" Margin="0,5"/>
-                    <TextBlock Text="Adds new tourists for each one that was ruined" 
+                    <TextBlock Text="Adds new tourists for each one that was ruined"
                                FontSize="10" Foreground="Gray" Margin="20,0,0,10" TextWrapping="Wrap"/>
-                    
-                    <RadioButton x:Name="RefillWhenEmptyRadio" Content="Fill Only When Bus Empty (Experimental)" 
+
+                    <RadioButton x:Name="RefillWhenEmptyRadio" Content="Fill Only When Bus Empty (Experimental)"
                                  GroupName="RefillMode" Margin="0,5"/>
-                    <TextBlock Text="Only refills tourists when a bus has zero tourists left" 
+                    <TextBlock Text="Only refills tourists when a bus has zero tourists left"
                                FontSize="10" Foreground="Gray" Margin="20,0,0,10" TextWrapping="Wrap"/>
                 </StackPanel>
             </GroupBox>
@@ -160,6 +158,37 @@
                 </StackPanel>
             </GroupBox>
             
+            <!-- Advanced Features -->
+            <GroupBox Header="Advanced Features" Padding="10" Margin="0,0,0,15">
+                <StackPanel>
+                    <CheckBox x:Name="GiveTourWholeBusCheckBox" Content="Give Tour Affects Whole Bus" IsChecked="False" Margin="0,5">
+                        <CheckBox.ToolTip>
+                            <TextBlock>When enabled, the Give Tour hotel action affects all tourists on the bus instead of just one</TextBlock>
+                        </CheckBox.ToolTip>
+                    </CheckBox>
+                    <TextBlock Text="Default: Only one tourist takes a tour"
+                               FontSize="10" Foreground="Gray" Margin="20,0,0,5" TextWrapping="Wrap"/>
+
+                    <CheckBox x:Name="ManualAttractionOrderCheckBox" Content="Manual Attraction Visit Order" IsChecked="False" Margin="0,10,0,5">
+                        <CheckBox.ToolTip>
+                            <TextBlock>When enabled, player manually chooses which attractions tourists visit instead of automatic priority order</TextBlock>
+                        </CheckBox.ToolTip>
+                    </CheckBox>
+                    <TextBlock Text="Default: Automatic priority order (HIGH → LOW)"
+                               FontSize="10" Foreground="Gray" Margin="20,0,0,5" TextWrapping="Wrap"/>
+                </StackPanel>
+            </GroupBox>
+
+            <!-- Import/Export Settings -->
+            <GroupBox Header="Import/Export Settings" Padding="10" Margin="0,0,0,15">
+                <StackPanel>
+                    <TextBlock Text="Save and load your custom game settings"
+                               FontSize="11" Foreground="Gray" Margin="0,0,0,10" TextWrapping="Wrap"/>
+                    <Button Content="Import Settings from JSON" Click="ImportSettings_Click" Margin="0,5" Height="30"/>
+                    <Button Content="Export Settings to JSON" Click="ExportSettings_Click" Margin="0,5" Height="30"/>
+                </StackPanel>
+            </GroupBox>
+
             <!-- Quick Presets -->
             <GroupBox Header="Quick Presets" Padding="10" Margin="0,0,0,15">
                 <StackPanel>

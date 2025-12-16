@@ -150,10 +150,10 @@ namespace BodenseeTourismus.Engine
             var city = _state.Board.GetCity(bus.CurrentCity);
             if (city == null) return result;
 
-            // Get attractions sorted by priority
+            // Get attractions sorted by priority (HIGH priority first)
             var attractions = city.Attractions
                 .Where(a => a.OwnerId.HasValue) // Only visit built attractions
-                .OrderBy(a => a.Priority)
+                .OrderByDescending(a => a.Priority)
                 .ThenBy(a => a.Id) // Stable sort for determinism
                 .ToList();
 
@@ -194,9 +194,18 @@ namespace BodenseeTourismus.Engine
                 if (tourist.Money == 0)
                 {
                     bus.Tourists.Remove(tourist);
-                    _state.CurrentPlayer.Money += earnedMoney; // Active player gets final payment
+
+                    // BOTH owner AND active player get paid when tourist is ruined
+                    if (owner != null)
+                    {
+                        owner.Money += earnedMoney;
+                        result.MoneyEarned[owner.Id] = result.MoneyEarned.GetValueOrDefault(owner.Id, 0) + earnedMoney;
+                    }
+                    _state.CurrentPlayer.Money += earnedMoney;
+                    result.MoneyEarned[_state.CurrentPlayer.Id] = result.MoneyEarned.GetValueOrDefault(_state.CurrentPlayer.Id, 0) + earnedMoney;
+
                     result.TouristsRuined++;
-                    result.MoneyFromRuinedTourists += earnedMoney;
+                    result.MoneyFromRuinedTourists += earnedMoney * 2; // Both owner and active player paid
                 }
             }
 

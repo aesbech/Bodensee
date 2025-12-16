@@ -51,10 +51,11 @@ namespace BodenseeTourismus.UI
             _gameState = setup.CreateGame(playerConfigs, _gameSettings);
             _engine = new GameEngine(_gameState);
             _analytics = new GameAnalytics();
+            _analytics.RecordGameSettings(_gameSettings); // Record settings for analytics
             _aiController = new AIController(_gameState.Random);
-            
+
             _currentTurnContext = null;
-            
+
             Log("Game started!");
             Log($"Settings: Appeal={_gameSettings.UseAppealSystem}, Refill={_gameSettings.TouristRefillMode}, Gray={_gameSettings.EnableGrayAttractions}");
             UpdateUI();

@@ -1,5 +1,9 @@
 using System;
+using System.Collections.Generic;
+using System.IO;
 using System.Windows;
+using Microsoft.Win32;
+using Newtonsoft.Json;
 using BodenseeTourismus.Core;
 
 namespace BodenseeTourismus.UI
@@ -41,7 +45,7 @@ namespace BodenseeTourismus.UI
             
             // Load bonus euro setting
             UseBonusEuroCheckBox.IsChecked = Settings.UseBonusEuro;
-            
+
             // Load language
             if (Settings.Language == GameSettings.AttractionLanguage.English)
                 LanguageEnglishRadio.IsChecked = true;
@@ -58,6 +62,10 @@ namespace BodenseeTourismus.UI
             StartingTouristsBox.Text = Settings.StartingTouristsPerBus.ToString();
             MaxTouristsBox.Text = Settings.MaxTouristsPerBus.ToString();
             IncreaseValueBox.Text = Settings.IncreaseValueBonus.ToString();
+
+            // Load advanced features
+            GiveTourWholeBusCheckBox.IsChecked = Settings.GiveTourAffectsWholeBus;
+            ManualAttractionOrderCheckBox.IsChecked = Settings.ManualAttractionOrder;
         }
 
         private void ApplyButton_Click(object sender, RoutedEventArgs e)
@@ -98,6 +106,10 @@ namespace BodenseeTourismus.UI
                 Settings.StartingTouristsPerBus = ParseInt(StartingTouristsBox.Text, "Starting Tourists");
                 Settings.MaxTouristsPerBus = ParseInt(MaxTouristsBox.Text, "Max Tourists");
                 Settings.IncreaseValueBonus = ParseInt(IncreaseValueBox.Text, "Increase Value Bonus");
+
+                // Advanced features
+                Settings.GiveTourAffectsWholeBus = GiveTourWholeBusCheckBox.IsChecked ?? false;
+                Settings.ManualAttractionOrder = ManualAttractionOrderCheckBox.IsChecked ?? false;
 
                 Applied = true;
                 DialogResult = true;
@@ -159,6 +171,74 @@ namespace BodenseeTourismus.UI
                 "No Appeal Mode",
                 MessageBoxButton.OK,
                 MessageBoxImage.Information);
+        }
+
+        // Import settings from JSON file
+        private void ImportSettings_Click(object sender, RoutedEventArgs e)
+        {
+            var dialog = new OpenFileDialog
+            {
+                Filter = "JSON files (*.json)|*.json|All files (*.*)|*.*",
+                Title = "Import Game Settings"
+            };
+
+            if (dialog.ShowDialog() == true)
+            {
+                try
+                {
+                    var json = File.ReadAllText(dialog.FileName);
+                    var dict = JsonConvert.DeserializeObject<Dictionary<string, object>>(json);
+                    Settings.ImportFromDictionary(dict);
+                    LoadSettings(); // Refresh UI with imported values
+                    MessageBox.Show(
+                        $"Settings imported successfully from:\n{Path.GetFileName(dialog.FileName)}",
+                        "Import Successful",
+                        MessageBoxButton.OK,
+                        MessageBoxImage.Information);
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show(
+                        $"Failed to import settings:\n{ex.Message}",
+                        "Import Error",
+                        MessageBoxButton.OK,
+                        MessageBoxImage.Error);
+                }
+            }
+        }
+
+        // Export settings to JSON file
+        private void ExportSettings_Click(object sender, RoutedEventArgs e)
+        {
+            var dialog = new SaveFileDialog
+            {
+                Filter = "JSON files (*.json)|*.json|All files (*.*)|*.*",
+                Title = "Export Game Settings",
+                FileName = "game_settings.json"
+            };
+
+            if (dialog.ShowDialog() == true)
+            {
+                try
+                {
+                    var dict = Settings.ExportForAnalytics();
+                    var json = JsonConvert.SerializeObject(dict, Formatting.Indented);
+                    File.WriteAllText(dialog.FileName, json);
+                    MessageBox.Show(
+                        $"Settings exported successfully to:\n{Path.GetFileName(dialog.FileName)}",
+                        "Export Successful",
+                        MessageBoxButton.OK,
+                        MessageBoxImage.Information);
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show(
+                        $"Failed to export settings:\n{ex.Message}",
+                        "Export Error",
+                        MessageBoxButton.OK,
+                        MessageBoxImage.Error);
+                }
+            }
         }
     }
 }

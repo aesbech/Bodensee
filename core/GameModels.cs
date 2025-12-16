@@ -78,7 +78,7 @@ namespace BodenseeTourismus.Core
         public bool EnableGrayAttractions { get; set; } = true;
         
         // Gray attraction settings
-        public int ZentrumPipsBonus { get; set; } = 2; // How many pips Zentrums add
+        public int ZentrumPipsBonus { get; set; } = 1; // How many pips Zentrums add (matching CSV specification)
         public int CasinoRerollsPerBus { get; set; } = 1; // How many tourists can be rerolled per bus
         
         // Bonus euro feature
@@ -120,6 +120,91 @@ namespace BodenseeTourismus.Core
                 3 => Player4StartMoney,
                 _ => Player1StartMoney + playerIndex
             };
+        }
+
+        // Export settings for analytics
+        public Dictionary<string, object> ExportForAnalytics()
+        {
+            return new Dictionary<string, object>
+            {
+                // Starting money
+                { "Player1StartMoney", Player1StartMoney },
+                { "Player2StartMoney", Player2StartMoney },
+                { "Player3StartMoney", Player3StartMoney },
+                { "Player4StartMoney", Player4StartMoney },
+
+                // Attraction costs
+                { "NatureBaseCost", NatureBaseCost },
+                { "WaterBaseCost", WaterBaseCost },
+                { "CultureBaseCost", CultureBaseCost },
+                { "GastronomyBaseCost", GastronomyBaseCost },
+                { "GrayBaseCost", GrayBaseCost },
+
+                // Game mechanics
+                { "UseAppealSystem", UseAppealSystem },
+                { "TouristRefillMode", TouristRefillMode.ToString() },
+                { "StartingTouristsPerBus", StartingTouristsPerBus },
+                { "MaxTouristsPerBus", MaxTouristsPerBus },
+                { "IncreaseValueBonus", IncreaseValueBonus },
+
+                // Gray attractions
+                { "EnableGrayAttractions", EnableGrayAttractions },
+                { "ZentrumPipsBonus", ZentrumPipsBonus },
+                { "CasinoRerollsPerBus", CasinoRerollsPerBus },
+
+                // Bonus features
+                { "UseBonusEuro", UseBonusEuro },
+                { "GiveTourAffectsWholeBus", GiveTourAffectsWholeBus },
+                { "ManualAttractionOrder", ManualAttractionOrder },
+
+                // Language
+                { "Language", Language.ToString() }
+            };
+        }
+
+        // Import settings from dictionary
+        public void ImportFromDictionary(Dictionary<string, object> dict)
+        {
+            // Starting money
+            if (dict.ContainsKey("Player1StartMoney")) Player1StartMoney = Convert.ToInt32(dict["Player1StartMoney"]);
+            if (dict.ContainsKey("Player2StartMoney")) Player2StartMoney = Convert.ToInt32(dict["Player2StartMoney"]);
+            if (dict.ContainsKey("Player3StartMoney")) Player3StartMoney = Convert.ToInt32(dict["Player3StartMoney"]);
+            if (dict.ContainsKey("Player4StartMoney")) Player4StartMoney = Convert.ToInt32(dict["Player4StartMoney"]);
+
+            // Attraction costs
+            if (dict.ContainsKey("NatureBaseCost")) NatureBaseCost = Convert.ToInt32(dict["NatureBaseCost"]);
+            if (dict.ContainsKey("WaterBaseCost")) WaterBaseCost = Convert.ToInt32(dict["WaterBaseCost"]);
+            if (dict.ContainsKey("CultureBaseCost")) CultureBaseCost = Convert.ToInt32(dict["CultureBaseCost"]);
+            if (dict.ContainsKey("GastronomyBaseCost")) GastronomyBaseCost = Convert.ToInt32(dict["GastronomyBaseCost"]);
+            if (dict.ContainsKey("GrayBaseCost")) GrayBaseCost = Convert.ToInt32(dict["GrayBaseCost"]);
+
+            // Game mechanics
+            if (dict.ContainsKey("UseAppealSystem")) UseAppealSystem = Convert.ToBoolean(dict["UseAppealSystem"]);
+            if (dict.ContainsKey("TouristRefillMode"))
+            {
+                if (Enum.TryParse<RefillMode>(dict["TouristRefillMode"].ToString(), out var refillMode))
+                    TouristRefillMode = refillMode;
+            }
+            if (dict.ContainsKey("StartingTouristsPerBus")) StartingTouristsPerBus = Convert.ToInt32(dict["StartingTouristsPerBus"]);
+            if (dict.ContainsKey("MaxTouristsPerBus")) MaxTouristsPerBus = Convert.ToInt32(dict["MaxTouristsPerBus"]);
+            if (dict.ContainsKey("IncreaseValueBonus")) IncreaseValueBonus = Convert.ToInt32(dict["IncreaseValueBonus"]);
+
+            // Gray attractions
+            if (dict.ContainsKey("EnableGrayAttractions")) EnableGrayAttractions = Convert.ToBoolean(dict["EnableGrayAttractions"]);
+            if (dict.ContainsKey("ZentrumPipsBonus")) ZentrumPipsBonus = Convert.ToInt32(dict["ZentrumPipsBonus"]);
+            if (dict.ContainsKey("CasinoRerollsPerBus")) CasinoRerollsPerBus = Convert.ToInt32(dict["CasinoRerollsPerBus"]);
+
+            // Bonus features
+            if (dict.ContainsKey("UseBonusEuro")) UseBonusEuro = Convert.ToBoolean(dict["UseBonusEuro"]);
+            if (dict.ContainsKey("GiveTourAffectsWholeBus")) GiveTourAffectsWholeBus = Convert.ToBoolean(dict["GiveTourAffectsWholeBus"]);
+            if (dict.ContainsKey("ManualAttractionOrder")) ManualAttractionOrder = Convert.ToBoolean(dict["ManualAttractionOrder"]);
+
+            // Language
+            if (dict.ContainsKey("Language"))
+            {
+                if (Enum.TryParse<AttractionLanguage>(dict["Language"].ToString(), out var language))
+                    Language = language;
+            }
         }
     }
 

@@ -127,12 +127,19 @@ namespace BodenseeTourismus.Analytics
         private List<TurnSummary> _turnSummaries;
         private TurnSummary _currentTurn;
         private int _turnCounter;
+        private Dictionary<string, object> _gameSettings;
 
         public GameAnalytics()
         {
             _allActions = new List<GameAction>();
             _turnSummaries = new List<TurnSummary>();
             _turnCounter = 0;
+            _gameSettings = new Dictionary<string, object>();
+        }
+
+        public void RecordGameSettings(GameSettings settings)
+        {
+            _gameSettings = settings.ExportForAnalytics();
         }
 
         public void StartTurn(int playerId, string playerName)
@@ -335,10 +342,23 @@ namespace BodenseeTourismus.Analytics
         public string ExportToCSV()
         {
             var lines = new List<string>();
-            
-            // Header
+
+            // Game Settings Header
+            if (_gameSettings != null && _gameSettings.Count > 0)
+            {
+                lines.Add("=== GAME SETTINGS ===");
+                lines.Add("Setting,Value");
+                foreach (var setting in _gameSettings)
+                {
+                    lines.Add($"{setting.Key},{setting.Value}");
+                }
+                lines.Add(""); // Empty line separator
+            }
+
+            // Actions Header
+            lines.Add("=== GAME ACTIONS ===");
             lines.Add("TurnNumber,PlayerId,PlayerName,ActionType,Timestamp,Details");
-            
+
             // Data
             foreach (var action in _allActions)
             {
