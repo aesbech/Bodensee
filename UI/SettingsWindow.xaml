@@ -1,0 +1,186 @@
+<Window x:Class="BodenseeTourismus.UI.SettingsWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Game Settings" Height="650" Width="500"
+        WindowStartupLocation="CenterOwner"
+        Background="#ECF0F1">
+    
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <StackPanel Margin="20">
+            <TextBlock Text="Game Settings" FontSize="24" FontWeight="Bold" Margin="0,0,0,20"/>
+            
+            <!-- Starting Money -->
+            <GroupBox Header="Starting Money" Padding="10" Margin="0,0,0,15">
+                <StackPanel>
+                    <StackPanel Orientation="Horizontal" Margin="0,5">
+                        <TextBlock Text="Player 1:" Width="100" VerticalAlignment="Center"/>
+                        <TextBox x:Name="Player1MoneyBox" Width="80" Text="6"/>
+                        <TextBlock Text="€" Margin="5,0,0,0" VerticalAlignment="Center"/>
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal" Margin="0,5">
+                        <TextBlock Text="Player 2:" Width="100" VerticalAlignment="Center"/>
+                        <TextBox x:Name="Player2MoneyBox" Width="80" Text="7"/>
+                        <TextBlock Text="€" Margin="5,0,0,0" VerticalAlignment="Center"/>
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal" Margin="0,5">
+                        <TextBlock Text="Player 3:" Width="100" VerticalAlignment="Center"/>
+                        <TextBox x:Name="Player3MoneyBox" Width="80" Text="8"/>
+                        <TextBlock Text="€" Margin="5,0,0,0" VerticalAlignment="Center"/>
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal" Margin="0,5">
+                        <TextBlock Text="Player 4:" Width="100" VerticalAlignment="Center"/>
+                        <TextBox x:Name="Player4MoneyBox" Width="80" Text="9"/>
+                        <TextBlock Text="€" Margin="5,0,0,0" VerticalAlignment="Center"/>
+                    </StackPanel>
+                </StackPanel>
+            </GroupBox>
+            
+            <!-- Attraction Base Costs -->
+            <GroupBox Header="Attraction Base Costs" Padding="10" Margin="0,0,0,15">
+                <StackPanel>
+                    <StackPanel Orientation="Horizontal" Margin="0,5">
+                        <Rectangle Width="20" Height="20" Fill="#4CAF50" Margin="0,0,10,0"/>
+                        <TextBlock Text="Nature:" Width="100" VerticalAlignment="Center"/>
+                        <TextBox x:Name="NatureCostBox" Width="80" Text="1"/>
+                        <TextBlock Text="€" Margin="5,0,0,0" VerticalAlignment="Center"/>
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal" Margin="0,5">
+                        <Rectangle Width="20" Height="20" Fill="#2196F3" Margin="0,0,10,0"/>
+                        <TextBlock Text="Water:" Width="100" VerticalAlignment="Center"/>
+                        <TextBox x:Name="WaterCostBox" Width="80" Text="1"/>
+                        <TextBlock Text="€" Margin="5,0,0,0" VerticalAlignment="Center"/>
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal" Margin="0,5">
+                        <Rectangle Width="20" Height="20" Fill="#F44336" Margin="0,0,10,0"/>
+                        <TextBlock Text="Culture:" Width="100" VerticalAlignment="Center"/>
+                        <TextBox x:Name="CultureCostBox" Width="80" Text="2"/>
+                        <TextBlock Text="€" Margin="5,0,0,0" VerticalAlignment="Center"/>
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal" Margin="0,5">
+                        <Rectangle Width="20" Height="20" Fill="#FFC107" Margin="0,0,10,0"/>
+                        <TextBlock Text="Gastronomy:" Width="100" VerticalAlignment="Center"/>
+                        <TextBox x:Name="GastronomyCostBox" Width="80" Text="3"/>
+                        <TextBlock Text="€" Margin="5,0,0,0" VerticalAlignment="Center"/>
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal" Margin="0,5">
+                        <Rectangle Width="20" Height="20" Fill="#9E9E9E" Margin="0,0,10,0"/>
+                        <TextBlock Text="Gray (Special):" Width="100" VerticalAlignment="Center"/>
+                        <TextBox x:Name="GrayCostBox" Width="80" Text="2"/>
+                        <TextBlock Text="€" Margin="5,0,0,0" VerticalAlignment="Center"/>
+                    </StackPanel>
+                </StackPanel>
+            </GroupBox>
+            
+            <!-- Gray Attraction Settings -->
+            <GroupBox Header="Gray Attraction Settings" Padding="10" Margin="0,0,0,15">
+                <StackPanel>
+                    <CheckBox x:Name="EnableGrayCheckBox" Content="Enable Gray Attractions" IsChecked="True" Margin="0,5">
+                        <CheckBox.ToolTip>
+                            <TextBlock>Gray attractions provide additional all-day actions to cities</TextBlock>
+                        </CheckBox.ToolTip>
+                    </CheckBox>
+                    
+                    <Separator Margin="0,10"/>
+                    
+                    <StackPanel Orientation="Horizontal" Margin="0,5">
+                        <TextBlock Text="Zentrum Pips Bonus:" Width="150" VerticalAlignment="Center"/>
+                        <TextBox x:Name="ZentrumPipsBox" Width="80" Text="2"/>
+                        <TextBlock Text="pips" Margin="5,0,0,0" VerticalAlignment="Center"/>
+                    </StackPanel>
+                    <TextBlock Text="How many pips Centers add to matching tourists" 
+                               FontSize="10" Foreground="Gray" Margin="20,0,0,5" TextWrapping="Wrap"/>
+                    
+                    <StackPanel Orientation="Horizontal" Margin="0,5">
+                        <TextBlock Text="Casino Rerolls/Bus:" Width="150" VerticalAlignment="Center"/>
+                        <TextBox x:Name="CasinoRerollsBox" Width="80" Text="1"/>
+                        <TextBlock Text="tourist(s)" Margin="5,0,0,0" VerticalAlignment="Center"/>
+                    </StackPanel>
+                    <TextBlock Text="How many tourists can be rerolled per bus in city" 
+                               FontSize="10" Foreground="Gray" Margin="20,0,0,10" TextWrapping="Wrap"/>
+                </StackPanel>
+            </GroupBox>
+            
+            <!-- Attraction Bonus Feature -->
+            <GroupBox Header="Attraction Bonus" Padding="10" Margin="0,0,0,15">
+                <StackPanel>
+                    <CheckBox x:Name="UseBonusEuroCheckBox" Content="Enable €1 Bonus Attractions" IsChecked="True" Margin="0,5">
+                        <CheckBox.ToolTip>
+                            <TextBlock>Some attractions (Hiking, Brewery) pay €1 more than their pips value</TextBlock>
+                        </CheckBox.ToolTip>
+                    </CheckBox>
+                    <TextBlock Text="When enabled: Wanderung (3 pips) pays €4, Bryggerri (3 pips) pays €4" 
+                               FontSize="10" Foreground="Gray" Margin="20,0,0,5" TextWrapping="Wrap"/>
+                    <TextBlock Text="When disabled: All attractions pay exactly their pip value" 
+                               FontSize="10" Foreground="Gray" Margin="20,0,0,10" TextWrapping="Wrap"/>
+                </StackPanel>
+            </GroupBox>
+            
+            <!-- Language Settings -->
+            <GroupBox Header="Language Settings" Padding="10" Margin="0,0,0,15">
+                <StackPanel>
+                    <TextBlock Text="Attraction Names:" FontWeight="Bold" Margin="0,5,0,5"/>
+                    <RadioButton x:Name="LanguageEnglishRadio" Content="English" 
+                                 GroupName="Language" Margin="0,5"/>
+                    <RadioButton x:Name="LanguageGermanRadio" Content="German" 
+                                 GroupName="Language" IsChecked="True" Margin="0,5"/>
+                </StackPanel>
+            </GroupBox>
+                    
+                    <Separator Margin="0,10"/>
+                    
+                    <TextBlock Text="Tourist Refill Mode:" FontWeight="Bold" Margin="0,5,0,5"/>
+                    <RadioButton x:Name="RefillMissingRadio" Content="Fill Missing Slots (Original Rules)" 
+                                 GroupName="RefillMode" IsChecked="True" Margin="0,5"/>
+                    <TextBlock Text="Adds new tourists for each one that was ruined" 
+                               FontSize="10" Foreground="Gray" Margin="20,0,0,10" TextWrapping="Wrap"/>
+                    
+                    <RadioButton x:Name="RefillWhenEmptyRadio" Content="Fill Only When Bus Empty (Experimental)" 
+                                 GroupName="RefillMode" Margin="0,5"/>
+                    <TextBlock Text="Only refills tourists when a bus has zero tourists left" 
+                               FontSize="10" Foreground="Gray" Margin="20,0,0,10" TextWrapping="Wrap"/>
+                </StackPanel>
+            </GroupBox>
+            
+            <!-- Tourist Settings -->
+            <GroupBox Header="Tourist Settings" Padding="10" Margin="0,0,0,15">
+                <StackPanel>
+                    <StackPanel Orientation="Horizontal" Margin="0,5">
+                        <TextBlock Text="Starting Tourists/Bus:" Width="150" VerticalAlignment="Center"/>
+                        <TextBox x:Name="StartingTouristsBox" Width="80" Text="4"/>
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal" Margin="0,5">
+                        <TextBlock Text="Max Tourists/Bus:" Width="150" VerticalAlignment="Center"/>
+                        <TextBox x:Name="MaxTouristsBox" Width="80" Text="4"/>
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal" Margin="0,5">
+                        <TextBlock Text="Increase Value Bonus:" Width="150" VerticalAlignment="Center"/>
+                        <TextBox x:Name="IncreaseValueBox" Width="80" Text="1"/>
+                        <TextBlock Text="€" Margin="5,0,0,0" VerticalAlignment="Center"/>
+                    </StackPanel>
+                </StackPanel>
+            </GroupBox>
+            
+            <!-- Quick Presets -->
+            <GroupBox Header="Quick Presets" Padding="10" Margin="0,0,0,15">
+                <StackPanel>
+                    <Button Content="Default Settings" Click="DefaultPreset_Click" Margin="0,5" Height="30"/>
+                    <Button Content="High Money Game" Click="HighMoneyPreset_Click" Margin="0,5" Height="30"/>
+                    <Button Content="Low Cost Attractions" Click="LowCostPreset_Click" Margin="0,5" Height="30"/>
+                    <Button Content="No Appeal Test Mode" Click="NoAppealPreset_Click" Margin="0,5" Height="30"/>
+                </StackPanel>
+            </GroupBox>
+            
+            <!-- Action Buttons -->
+            <Grid Margin="0,20,0,0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                <Button Grid.Column="0" Content="Apply Settings" Click="ApplyButton_Click" 
+                        Height="35" Margin="0,0,5,0" Background="#2ECC71" Foreground="White" FontWeight="Bold"/>
+                <Button Grid.Column="1" Content="Cancel" Click="CancelButton_Click" 
+                        Height="35" Margin="5,0,0,0"/>
+            </Grid>
+        </StackPanel>
+    </ScrollViewer>
+</Window>

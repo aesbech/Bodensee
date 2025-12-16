@@ -1,0 +1,152 @@
+<Window x:Class="BodenseeTourismus.UI.AttractionEditorWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Attraction Editor" Height="700" Width="1000"
+        WindowStartupLocation="CenterScreen">
+    
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+        
+        <!-- Top Menu Bar -->
+        <Menu Grid.Row="0">
+            <MenuItem Header="File">
+                <MenuItem Header="Load from CSV..." Click="LoadFromCSV_Click"/>
+                <MenuItem Header="Save to CSV..." Click="SaveToCSV_Click"/>
+                <Separator/>
+                <MenuItem Header="Reset to Defaults" Click="ResetToDefaults_Click"/>
+                <Separator/>
+                <MenuItem Header="Close" Click="Close_Click"/>
+            </MenuItem>
+            <MenuItem Header="Add">
+                <MenuItem Header="Add Nature Attraction" Click="AddNature_Click"/>
+                <MenuItem Header="Add Water Attraction" Click="AddWater_Click"/>
+                <MenuItem Header="Add Culture Attraction" Click="AddCulture_Click"/>
+                <MenuItem Header="Add Gastronomy Attraction" Click="AddGastronomy_Click"/>
+                <MenuItem Header="Add Gray Attraction" Click="AddGray_Click"/>
+            </MenuItem>
+        </Menu>
+        
+        <!-- Main Content -->
+        <Grid Grid.Row="1" Margin="10">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="200"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="300"/>
+            </Grid.ColumnDefinitions>
+            
+            <!-- Left Panel: Category Filter -->
+            <Border Grid.Column="0" Background="#ECF0F1" Padding="10" BorderBrush="#BDC3C7" BorderThickness="0,0,1,0">
+                <StackPanel>
+                    <TextBlock Text="Filter by Category" FontSize="14" FontWeight="Bold" Margin="0,0,0,10"/>
+                    <RadioButton x:Name="FilterAll" Content="All Attractions" IsChecked="True" Margin="0,5" Checked="FilterChanged"/>
+                    <RadioButton x:Name="FilterNature" Content="🟢 Nature" Margin="0,5" Checked="FilterChanged"/>
+                    <RadioButton x:Name="FilterWater" Content="🔵 Water" Margin="0,5" Checked="FilterChanged"/>
+                    <RadioButton x:Name="FilterCulture" Content="🔴 Culture" Margin="0,5" Checked="FilterChanged"/>
+                    <RadioButton x:Name="FilterGastronomy" Content="🟡 Gastronomy" Margin="0,5" Checked="FilterChanged"/>
+                    <RadioButton x:Name="FilterGray" Content="⚫ Gray" Margin="0,5" Checked="FilterChanged"/>
+                    
+                    <Separator Margin="0,15"/>
+                    
+                    <TextBlock Text="Statistics" FontSize="14" FontWeight="Bold" Margin="0,0,0,10"/>
+                    <TextBlock x:Name="StatsText" TextWrapping="Wrap" FontSize="11"/>
+                </StackPanel>
+            </Border>
+            
+            <!-- Center Panel: Attraction List -->
+            <Border Grid.Column="1" Background="White" Padding="10" BorderBrush="#BDC3C7" BorderThickness="0,0,1,0">
+                <DockPanel>
+                    <TextBlock DockPanel.Dock="Top" Text="Attractions" FontSize="16" FontWeight="Bold" Margin="0,0,0,10"/>
+                    
+                    <DataGrid x:Name="AttractionsGrid" 
+                              AutoGenerateColumns="False" 
+                              CanUserAddRows="False"
+                              CanUserDeleteRows="False"
+                              SelectionMode="Single"
+                              SelectionChanged="AttractionsGrid_SelectionChanged">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="ID" Binding="{Binding Id}" Width="40" IsReadOnly="True"/>
+                            <DataGridTextColumn Header="Category" Binding="{Binding Category}" Width="80" IsReadOnly="True"/>
+                            <DataGridTextColumn Header="Name (EN)" Binding="{Binding NameEnglish}" Width="*"/>
+                            <DataGridTextColumn Header="Name (DE)" Binding="{Binding NameGerman}" Width="*"/>
+                            <DataGridTextColumn Header="Pips" Binding="{Binding Value}" Width="50"/>
+                            <DataGridTextColumn Header="Priority" Binding="{Binding Priority}" Width="60"/>
+                            <DataGridCheckBoxColumn Header="€1 Bonus" Binding="{Binding PaysBonusEuro}" Width="70"/>
+                            <DataGridTextColumn Header="Gray Effect" Binding="{Binding GrantedAction}" Width="120"/>
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </DockPanel>
+            </Border>
+            
+            <!-- Right Panel: Edit Selected -->
+            <Border Grid.Column="2" Background="#ECF0F1" Padding="10">
+                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                    <StackPanel x:Name="EditPanel">
+                        <TextBlock Text="Edit Attraction" FontSize="16" FontWeight="Bold" Margin="0,0,0,15"/>
+                        
+                        <TextBlock Text="ID:" FontWeight="Bold" Margin="0,5,0,2"/>
+                        <TextBox x:Name="EditId" IsReadOnly="True" Background="#E0E0E0"/>
+                        
+                        <TextBlock Text="Category:" FontWeight="Bold" Margin="0,10,0,2"/>
+                        <ComboBox x:Name="EditCategory" SelectionChanged="EditCategory_SelectionChanged">
+                            <ComboBoxItem Content="Nature"/>
+                            <ComboBoxItem Content="Water"/>
+                            <ComboBoxItem Content="Culture"/>
+                            <ComboBoxItem Content="Gastronomy"/>
+                            <ComboBoxItem Content="Gray"/>
+                        </ComboBox>
+                        
+                        <TextBlock Text="English Name:" FontWeight="Bold" Margin="0,10,0,2"/>
+                        <TextBox x:Name="EditNameEnglish"/>
+                        
+                        <TextBlock Text="German Name:" FontWeight="Bold" Margin="0,10,0,2"/>
+                        <TextBox x:Name="EditNameGerman"/>
+                        
+                        <TextBlock Text="Pips (Value):" FontWeight="Bold" Margin="0,10,0,2"/>
+                        <TextBox x:Name="EditValue"/>
+                        
+                        <TextBlock Text="Priority (1-3):" FontWeight="Bold" Margin="0,10,0,2"/>
+                        <TextBox x:Name="EditPriority"/>
+                        
+                        <CheckBox x:Name="EditBonusEuro" Content="Pays €1 Bonus" Margin="0,15,0,10"/>
+                        
+                        <TextBlock Text="Gray Effect:" FontWeight="Bold" Margin="0,10,0,2"/>
+                        <ComboBox x:Name="EditGrayEffect">
+                            <ComboBoxItem Content="None"/>
+                            <ComboBoxItem Content="BuildAttraction"/>
+                            <ComboBoxItem Content="RerollTourist"/>
+                            <ComboBoxItem Content="GiveTour"/>
+                            <ComboBoxItem Content="AddTwoPipsGreen"/>
+                            <ComboBoxItem Content="AddTwoPipsBlue"/>
+                            <ComboBoxItem Content="AddTwoPipsRed"/>
+                            <ComboBoxItem Content="AddTwoPipsYellow"/>
+                            <ComboBoxItem Content="BusDispatch"/>
+                            <ComboBoxItem Content="BuildAttractionDiscount"/>
+                        </ComboBox>
+                        <TextBlock Text="Only used for Gray attractions" FontSize="10" Foreground="Gray" Margin="0,2,0,10"/>
+                        
+                        <Separator Margin="0,15"/>
+                        
+                        <Button Content="Save Changes" Click="SaveChanges_Click" 
+                                Background="#2ECC71" Foreground="White" 
+                                Padding="10,5" Margin="0,10,0,5"/>
+                        <Button Content="Delete Attraction" Click="DeleteAttraction_Click" 
+                                Background="#E74C3C" Foreground="White" 
+                                Padding="10,5" Margin="0,5"/>
+                        <Button Content="Duplicate Attraction" Click="DuplicateAttraction_Click" 
+                                Background="#3498DB" Foreground="White" 
+                                Padding="10,5" Margin="0,5"/>
+                    </StackPanel>
+                </ScrollViewer>
+            </Border>
+        </Grid>
+        
+        <!-- Bottom Status Bar -->
+        <Border Grid.Row="2" Background="#34495E" Padding="5">
+            <TextBlock x:Name="StatusText" Text="Ready" Foreground="White"/>
+        </Border>
+    </Grid>
+</Window>
