@@ -167,9 +167,9 @@
                             </Button.Style>
                         </Button>
                         
-                        <Button Canvas.Left="95" Canvas.Top="215" Width="90" Height="90" 
-                               Opacity="0" Cursor="Hand" Click="CityButton_Click" Tag="Radolfzelt"
-                               ToolTip="Radolfzelt">
+                        <Button Canvas.Left="95" Canvas.Top="215" Width="90" Height="90"
+                               Opacity="0" Cursor="Hand" Click="CityButton_Click" Tag="Radolfzell"
+                               ToolTip="Radolfzell">
                             <Button.Style>
                                 <Style TargetType="Button">
                                     <Setter Property="Background" Value="Transparent"/>

@@ -4,6 +4,7 @@ using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
+using System.Windows.Shapes;
 using Microsoft.Win32;
 using System.IO;
 using BodenseeTourismus.Core;
@@ -28,6 +29,35 @@ namespace BodenseeTourismus.UI
         private List<BusViewModel> _busVMs;
         private List<CityViewModel> _cityVMs;
         private List<MarketCategoryViewModel> _marketVMs;
+
+        // City coordinates for board visualization (Canvas positions + offset for centering)
+        private readonly Dictionary<string, (double X, double Y)> _cityCoordinates = new Dictionary<string, (double, double)>
+        {
+            // Northwest
+            { "Bodman-Ludwigshafen", (120, 80) },
+            { "Überlingen", (340, 180) },
+            { "Radolfzell", (140, 260) },
+            { "Konstanz", (320, 340) },
+            { "Kreuzlingen", (340, 480) },
+            // North
+            { "Ravensburg", (920, 80) },
+            { "Wangen", (1180, 160) },
+            // Lake ports
+            { "Meersburg", (480, 260) },
+            { "Friedrichshafen", (820, 340) },
+            { "Lindau", (1080, 360) },
+            { "Bregenz", (1180, 580) },
+            { "Hard", (1020, 680) },
+            { "Rorschach", (880, 820) },
+            { "Arbon", (740, 560) },
+            { "Romanshorn", (560, 600) },
+            // South
+            { "Weinfelden", (260, 640) },
+            { "Amrisvil", (480, 760) },
+            { "St. Gallen", (620, 880) },
+            { "Wil", (200, 840) },
+            { "Dornbirn", (1260, 720) }
+        };
 
         public MainWindow()
         {
@@ -174,6 +204,11 @@ namespace BodenseeTourismus.UI
             MoveButton.IsEnabled = busSelected && _currentTurnContext?.UsedMorningAction != null;
             UseAllDayActionButton.IsEnabled = busSelected && !string.IsNullOrEmpty(_currentTurnContext?.SelectedBus?.CurrentCity);
             EndTurnButton.IsEnabled = busSelected;
+
+            // Update board visualizations
+            UpdateBusPositions();
+            UpdateAttractionDots();
+            HighlightValidDestinations();
         }
 
         private Brush GetCategoryBrush(AttractionCategory category)
@@ -797,6 +832,216 @@ namespace BodenseeTourismus.UI
                 MessageBox.Show("Data exported successfully!", "Export Complete");
             }
         }
+
+        // ==================== BOARD VISUALIZATION METHODS ====================
+
+        private void CityButton_Click(object sender, RoutedEventArgs e)
+        {
+            var button = sender as Button;
+            string cityName = button.Tag.ToString();
+
+            var city = _gameState.Board.GetCity(cityName);
+            if (city == null) return;
+
+            // Build info message
+            string info = $"City: {cityName}\n";
+            if (city.MorningAction.HasValue)
+                info += $"Morning Action: {city.MorningAction}\n";
+            if (city.AllDayAction.HasValue)
+                info += $"All-Day Action: {city.AllDayAction}\n";
+
+            var attractions = city.Attractions.Where(a => a.OwnerId.HasValue).ToList();
+            if (attractions.Any())
+            {
+                info += $"\nAttractions ({attractions.Count}):\n";
+                foreach (var attr in attractions)
+                {
+                    var owner = _gameState.Players.FirstOrDefault(p => p.Id == attr.OwnerId);
+                    info += $"  - {attr.GetName(_gameSettings.Language)} ({attr.Value}€) - {owner?.Name}\n";
+                }
+            }
+
+            var busInCity = _gameState.Board.Buses.FirstOrDefault(b => b.CurrentCity == cityName);
+            if (busInCity != null)
+            {
+                info += $"\nBus {busInCity.Id + 1} is here ({busInCity.Tourists.Count} tourists)\n";
+            }
+
+            MessageBox.Show(info, $"City Info: {cityName}", MessageBoxButton.OK, MessageBoxImage.Information);
+        }
+
+        private void UpdateBusPositions()
+        {
+            // Update bus indicator positions based on actual bus locations
+            var busIndicators = new[] { Bus1Indicator, Bus2Indicator, Bus3Indicator, Bus4Indicator };
+
+            for (int i = 0; i < _gameState.Board.Buses.Count && i < busIndicators.Length; i++)
+            {
+                var bus = _gameState.Board.Buses[i];
+                var indicator = busIndicators[i];
+
+                if (_cityCoordinates.TryGetValue(bus.CurrentCity, out var coords))
+                {
+                    Canvas.SetLeft(indicator, coords.X);
+                    Canvas.SetTop(indicator, coords.Y);
+                }
+            }
+        }
+
+        private void HighlightValidDestinations()
+        {
+            // Clear previous highlights
+            ClearHighlights();
+
+            if (_currentTurnContext?.SelectedBus == null) return;
+
+            var validDestinations = _engine.GetValidDestinations(_currentTurnContext.SelectedBus, _currentTurnContext);
+
+            // Find the canvas that contains the board
+            var canvas = FindVisualChild<Canvas>(CenterPanel);
+            if (canvas == null) return;
+
+            // Draw highlight circles on valid destinations
+            foreach (var destCity in validDestinations)
+            {
+                if (_cityCoordinates.TryGetValue(destCity, out var coords))
+                {
+                    var highlight = new Ellipse
+                    {
+                        Width = 80,
+                        Height = 80,
+                        Fill = new SolidColorBrush(Color.FromArgb(100, 0, 255, 0)), // Semi-transparent green
+                        Stroke = Brushes.LimeGreen,
+                        StrokeThickness = 3,
+                        Tag = "Highlight" // Tag for easy removal
+                    };
+
+                    Canvas.SetLeft(highlight, coords.X - 25); // Center the highlight
+                    Canvas.SetTop(highlight, coords.Y - 25);
+                    Canvas.SetZIndex(highlight, 50); // Below buses but above board
+
+                    canvas.Children.Add(highlight);
+                }
+            }
+
+            // Draw connection lines from current city to valid destinations
+            if (_currentTurnContext.SelectedBus != null)
+            {
+                DrawConnectionLines(_currentTurnContext.SelectedBus.CurrentCity, validDestinations, canvas);
+            }
+        }
+
+        private void DrawConnectionLines(string fromCity, List<string> toCities, Canvas canvas)
+        {
+            if (!_cityCoordinates.TryGetValue(fromCity, out var fromCoords)) return;
+
+            foreach (var toCity in toCities)
+            {
+                if (_cityCoordinates.TryGetValue(toCity, out var toCoords))
+                {
+                    var line = new Line
+                    {
+                        X1 = fromCoords.X + 15,
+                        Y1 = fromCoords.Y + 15,
+                        X2 = toCoords.X + 15,
+                        Y2 = toCoords.Y + 15,
+                        Stroke = Brushes.Yellow,
+                        StrokeThickness = 4,
+                        Opacity = 0.7,
+                        Tag = "Highlight" // Tag for easy removal
+                    };
+
+                    Canvas.SetZIndex(line, 40); // Below highlights
+                    canvas.Children.Add(line);
+                }
+            }
+        }
+
+        private void ClearHighlights()
+        {
+            var canvas = FindVisualChild<Canvas>(CenterPanel);
+            if (canvas == null) return;
+
+            // Remove all elements tagged as "Highlight"
+            var toRemove = canvas.Children.OfType<FrameworkElement>()
+                .Where(e => e.Tag?.ToString() == "Highlight")
+                .ToList();
+
+            foreach (var element in toRemove)
+            {
+                canvas.Children.Remove(element);
+            }
+        }
+
+        private void UpdateAttractionDots()
+        {
+            // Clear existing dots
+            AttractionDotsContainer.Children.Clear();
+
+            // Draw colored dots for each built attraction
+            foreach (var city in _gameState.Board.Cities.Values)
+            {
+                var builtAttractions = city.Attractions.Where(a => a.OwnerId.HasValue).ToList();
+                if (!builtAttractions.Any()) continue;
+
+                if (_cityCoordinates.TryGetValue(city.Name, out var coords))
+                {
+                    int dotIndex = 0;
+                    foreach (var attraction in builtAttractions.Take(5)) // Max 5 dots per city
+                    {
+                        var owner = _gameState.Players.FirstOrDefault(p => p.Id == attraction.OwnerId);
+                        if (owner == null) continue;
+
+                        // Create small colored dot
+                        var dot = new Ellipse
+                        {
+                            Width = 10,
+                            Height = 10,
+                            Fill = GetPlayerColor(owner.Id),
+                            Stroke = Brushes.White,
+                            StrokeThickness = 1
+                        };
+
+                        // Position dots in a small grid around city center
+                        double offsetX = (dotIndex % 3) * 12 - 12;
+                        double offsetY = (dotIndex / 3) * 12 + 40;
+
+                        Canvas.SetLeft(dot, coords.X + offsetX);
+                        Canvas.SetTop(dot, coords.Y + offsetY);
+                        Canvas.SetZIndex(dot, 95);
+
+                        AttractionDotsContainer.Children.Add(dot);
+                        dotIndex++;
+                    }
+                }
+            }
+        }
+
+        private Brush GetPlayerColor(int playerId)
+        {
+            var colors = new[] { Brushes.Red, Brushes.Blue, Brushes.Orange, Brushes.Purple };
+            return playerId < colors.Length ? colors[playerId] : Brushes.Gray;
+        }
+
+        private T FindVisualChild<T>(DependencyObject parent) where T : DependencyObject
+        {
+            if (parent == null) return null;
+
+            for (int i = 0; i < VisualTreeHelper.GetChildrenCount(parent); i++)
+            {
+                var child = VisualTreeHelper.GetChild(parent, i);
+                if (child is T typedChild)
+                    return typedChild;
+
+                var childOfChild = FindVisualChild<T>(child);
+                if (childOfChild != null)
+                    return childOfChild;
+            }
+
+            return null;
+        }
+
+        // ==================== END BOARD VISUALIZATION ====================
 
         private void Log(string message)
         {
