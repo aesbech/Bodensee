@@ -11,6 +11,7 @@ namespace BodenseeTourismus.Engine
         public string StartCity { get; set; }
         public MorningAction? UsedMorningAction { get; set; }
         public bool UsedAllDayAction { get; set; }
+        public bool HasMoved { get; set; }
         public List<string> VisitedAttractions { get; set; }
         public int TouristsRuined { get; set; }
         public bool IgnoreNextAppeal { get; set; }

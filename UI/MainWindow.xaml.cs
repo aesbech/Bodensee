@@ -170,7 +170,7 @@ namespace BodenseeTourismus.UI
             
             // Update turn buttons
             bool busSelected = _currentTurnContext?.SelectedBus != null;
-            UseMorningActionButton.IsEnabled = busSelected && _currentTurnContext?.UsedMorningAction == null;
+            UseMorningActionButton.IsEnabled = busSelected && _currentTurnContext?.UsedMorningAction == null && !(_currentTurnContext?.HasMoved ?? false);
             MoveButton.IsEnabled = busSelected && _currentTurnContext?.UsedMorningAction != null;
             UseAllDayActionButton.IsEnabled = busSelected && !string.IsNullOrEmpty(_currentTurnContext?.SelectedBus?.CurrentCity);
             EndTurnButton.IsEnabled = busSelected;
@@ -288,7 +288,8 @@ namespace BodenseeTourismus.UI
             {
                 var destination = dialog.SelectedDestination;
                 _currentTurnContext.SelectedBus.CurrentCity = destination;
-                
+                _currentTurnContext.HasMoved = true;
+
                 Log($"Bus moved to {destination}");
                 
                 _analytics.LogAction(_gameState.CurrentPlayer.Id, _gameState.CurrentPlayer.Name,
@@ -369,7 +370,13 @@ namespace BodenseeTourismus.UI
                     HandleContractor(city);
                     break;
             }
-            
+
+            // If used during morning phase (before moving), mark that a morning-phase action was taken
+            if (!_currentTurnContext.HasMoved)
+            {
+                _currentTurnContext.UsedMorningAction = MorningAction.None;
+            }
+
             _currentTurnContext.UsedAllDayAction = true;
             UpdateUI();
         }
