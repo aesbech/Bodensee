@@ -627,7 +627,11 @@ namespace BodenseeTourismus.UI
                 }
             }
         }
+
+        private void HandleBusDispatch()
         {
+            if (_currentTurnContext?.SelectedBus == null) return;
+
             // Get all other buses in occupied cities
             var otherBuses = _gameState.Board.Buses
                 .Where(b => b.Id != _currentTurnContext.SelectedBus.Id)
@@ -760,7 +764,12 @@ namespace BodenseeTourismus.UI
                                 if (_engine.BuildAttraction(attraction, cityName))
                                 {
                                     Log($"AI built {attraction.GetName(_gameSettings.Language)} in {cityName}");
-                                    _gameState.Market.Refill(attraction.Category, _gameState.Settings.MarketRefillAmount);
+
+                                    // Refill market - Gray attractions use special refill
+                                    if (attraction.Category == AttractionCategory.Gray)
+                                        _gameState.Market.RefillGray();
+                                    else
+                                        _gameState.Market.Refill(attraction.Category, _gameState.Settings.MarketRefillAmount);
                                 }
                             }
                             break;
@@ -775,7 +784,12 @@ namespace BodenseeTourismus.UI
                                 if (_engine.BuildAttraction(attraction, cityName, discount))
                                 {
                                     Log($"AI built {attraction.GetName(_gameSettings.Language)} with €{discount} discount in {cityName}");
-                                    _gameState.Market.Refill(attraction.Category, _gameState.Settings.MarketRefillAmount);
+
+                                    // Refill market - Gray attractions use special refill
+                                    if (attraction.Category == AttractionCategory.Gray)
+                                        _gameState.Market.RefillGray();
+                                    else
+                                        _gameState.Market.Refill(attraction.Category, _gameState.Settings.MarketRefillAmount);
                                 }
                             }
                             break;
@@ -784,8 +798,9 @@ namespace BodenseeTourismus.UI
                             if (decision.SelectedBus.Tourists.Any())
                             {
                                 var randomTourist = decision.SelectedBus.Tourists[_gameState.Random.Next(decision.SelectedBus.Tourists.Count)];
-                                randomTourist.Money += 2;
-                                Log($"AI added 2€ to a {randomTourist.Category} tourist (now €{randomTourist.Money})");
+                                int oldValue = randomTourist.Money;
+                                randomTourist.Money = Math.Min(6, randomTourist.Money + _gameState.Settings.ZentrumPipsBonus);
+                                Log($"AI added {_gameState.Settings.ZentrumPipsBonus} pips to {randomTourist.Category} tourist: €{oldValue} → €{randomTourist.Money}");
                             }
                             break;
 
@@ -805,28 +820,60 @@ namespace BodenseeTourismus.UI
                             var colorTourist = decision.SelectedBus.Tourists.FirstOrDefault(t => t.Category == targetCategory);
                             if (colorTourist != null)
                             {
-                                colorTourist.Money += 2;
-                                Log($"AI added 2€ to {targetCategory} tourist (now €{colorTourist.Money})");
+                                int oldValue = colorTourist.Money;
+                                colorTourist.Money = Math.Min(6, colorTourist.Money + _gameState.Settings.ZentrumPipsBonus);
+                                Log($"AI added {_gameState.Settings.ZentrumPipsBonus} pips to {targetCategory} tourist: €{oldValue} → €{colorTourist.Money}");
                             }
                             break;
 
                         case AllDayAction.RerollTourist:
-                            if (decision.SelectedBus.Tourists.Any())
+                            // Casino works on all buses in current city
+                            var cityBuses = _gameState.Board.Buses
+                                .Where(b => b.CurrentCity == decision.SelectedBus.CurrentCity)
+                                .ToList();
+                            var allTouristsInCity = cityBuses.SelectMany(b => b.Tourists).ToList();
+
+                            if (allTouristsInCity.Any())
                             {
-                                // Reroll tourist with least money
-                                var poorestTourist = decision.SelectedBus.Tourists.OrderBy(t => t.Money).First();
-                                int oldMoney = poorestTourist.Money;
-                                int newMoney = _gameState.Random.Next(1, 7);
-                                poorestTourist.Money = newMoney;
-                                Log($"AI rerolled {poorestTourist.Category} tourist: €{oldMoney} → €{newMoney}");
+                                int rerollsAllowed = _gameState.Settings.CasinoRerollsPerBus;
+                                for (int i = 0; i < rerollsAllowed && allTouristsInCity.Any(); i++)
+                                {
+                                    // AI strategy: reroll poorest tourist
+                                    var poorestTourist = allTouristsInCity.OrderBy(t => t.Money).First();
+                                    int oldMoney = poorestTourist.Money;
+
+                                    // Reroll, avoiding 1s
+                                    int newMoney;
+                                    do
+                                    {
+                                        newMoney = _gameState.Random.Next(1, 7);
+                                    } while (newMoney == 1);
+
+                                    poorestTourist.Money = newMoney;
+                                    Log($"AI rerolled {poorestTourist.Category} tourist: €{oldMoney} → €{newMoney}");
+                                }
                             }
                             break;
 
                         case AllDayAction.GiveTour:
-                            // Give immediate extra tour
-                            var extraTourResult = _engine.GiveBusTour(decision.SelectedBus, _currentTurnContext);
-                            Log($"AI gave extra tour: {extraTourResult.AttractionsVisited.Count} attractions visited, {extraTourResult.TouristsRuined} ruined");
-                            _currentTurnContext.TouristsRuined += extraTourResult.TouristsRuined;
+                            // Give immediate extra tour - respect setting for whole bus vs single tourist
+                            if (_gameState.Settings.GiveTourAffectsWholeBus)
+                            {
+                                // Whole bus tour
+                                var extraTourResult = _engine.GiveBusTour(decision.SelectedBus, _currentTurnContext);
+                                Log($"AI gave extra tour (whole bus): {extraTourResult.AttractionsVisited.Count} attractions visited, {extraTourResult.TouristsRuined} ruined");
+                                _currentTurnContext.TouristsRuined += extraTourResult.TouristsRuined;
+                            }
+                            else
+                            {
+                                // Single tourist tour - AI picks richest tourist to maximize value
+                                if (decision.SelectedBus.Tourists.Any())
+                                {
+                                    var richestTourist = decision.SelectedBus.Tourists.OrderByDescending(t => t.Money).First();
+                                    var singleTourResult = _engine.GiveSingleTouristTour(decision.SelectedBus, richestTourist, decision.SelectedBus.CurrentCity);
+                                    Log($"AI gave extra tour (single tourist): {singleTourResult.AttractionsVisited.Count} attractions visited, ruined: {singleTourResult.TouristsRuined > 0}");
+                                }
+                            }
                             break;
 
                         case AllDayAction.BusDispatch:
