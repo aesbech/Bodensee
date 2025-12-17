@@ -206,7 +206,7 @@ namespace BodenseeTourismus.UI
             EndTurnButton.IsEnabled = busSelected;
 
             // Update board visualizations
-            UpdateBusPositions();
+            UpdateBusVisuals();
             UpdateAttractionDots();
             HighlightValidDestinations();
         }
@@ -870,21 +870,102 @@ namespace BodenseeTourismus.UI
             MessageBox.Show(info, $"City Info: {cityName}", MessageBoxButton.OK, MessageBoxImage.Information);
         }
 
-        private void UpdateBusPositions()
+        private void UpdateBusVisuals()
         {
-            // Update bus indicator positions based on actual bus locations
-            var busIndicators = new[] { Bus1Indicator, Bus2Indicator, Bus3Indicator, Bus4Indicator };
+            // Clear existing bus icons
+            BusIconsContainer.Children.Clear();
 
-            for (int i = 0; i < _gameState.Board.Buses.Count && i < busIndicators.Length; i++)
+            // Create bus icon for each bus
+            foreach (var bus in _gameState.Board.Buses)
             {
-                var bus = _gameState.Board.Buses[i];
-                var indicator = busIndicators[i];
+                if (!_cityCoordinates.TryGetValue(bus.CurrentCity, out var coords))
+                    continue;
 
-                if (_cityCoordinates.TryGetValue(bus.CurrentCity, out var coords))
+                // Create bus container
+                var busIcon = new Canvas
                 {
-                    Canvas.SetLeft(indicator, coords.X);
-                    Canvas.SetTop(indicator, coords.Y);
+                    Width = 60,
+                    Height = 20
+                };
+
+                // Create 4 tourist slot rectangles (2x2 grid)
+                for (int slotIndex = 0; slotIndex < 4; slotIndex++)
+                {
+                    var tourist = slotIndex < bus.Tourists.Count ? bus.Tourists[slotIndex] : null;
+
+                    var slotRect = new Border
+                    {
+                        Width = 28,
+                        Height = 8,
+                        BorderBrush = Brushes.White,
+                        BorderThickness = new Thickness(1),
+                        CornerRadius = new CornerRadius(2)
+                    };
+
+                    // Position in 2x2 grid
+                    double slotX = (slotIndex % 2) * 30;
+                    double slotY = (slotIndex / 2) * 10;
+
+                    Canvas.SetLeft(slotRect, slotX);
+                    Canvas.SetTop(slotRect, slotY);
+
+                    if (tourist != null && tourist.Money > 0)
+                    {
+                        // Active tourist - show category color and money
+                        slotRect.Background = GetCategoryBrush(tourist.Category);
+
+                        var moneyText = new TextBlock
+                        {
+                            Text = tourist.Money.ToString(),
+                            Foreground = Brushes.White,
+                            FontSize = 7,
+                            FontWeight = FontWeights.Bold,
+                            HorizontalAlignment = HorizontalAlignment.Center,
+                            VerticalAlignment = VerticalAlignment.Center
+                        };
+
+                        slotRect.Child = moneyText;
+                    }
+                    else
+                    {
+                        // Empty or ruined slot - grey
+                        slotRect.Background = Brushes.Gray;
+                        slotRect.Opacity = 0.5;
+                    }
+
+                    busIcon.Children.Add(slotRect);
                 }
+
+                // Add bus number label above icon
+                var busLabel = new TextBlock
+                {
+                    Text = $"🚌{bus.Id + 1}",
+                    FontSize = 10,
+                    FontWeight = FontWeights.Bold,
+                    Foreground = Brushes.Black,
+                    Background = new SolidColorBrush(Color.FromArgb(200, 255, 255, 255)),
+                    Padding = new Thickness(2, 0, 2, 0)
+                };
+
+                Canvas.SetLeft(busLabel, 15);
+                Canvas.SetTop(busLabel, -12);
+                busIcon.Children.Add(busLabel);
+
+                // Position bus icon on board
+                Canvas.SetLeft(busIcon, coords.X - 15); // Center the icon
+                Canvas.SetTop(busIcon, coords.Y + 5);
+                Canvas.SetZIndex(busIcon, 100);
+
+                // Add tooltip with detailed info
+                var tooltipText = $"Bus {bus.Id + 1} in {bus.CurrentCity}\n";
+                tooltipText += $"Tourists: {bus.Tourists.Count}\n";
+                foreach (var t in bus.Tourists)
+                {
+                    tooltipText += $"  {t.Category}: €{t.Money}\n";
+                }
+                busIcon.ToolTip = tooltipText.TrimEnd();
+
+                BusIconsContainer.Children.Add(busIcon);
             }
         }
 

@@ -439,23 +439,9 @@
                             </Button.Style>
                         </Button>
                         
-                        <!-- Bus Indicators (Colored Circles) -->
-                        <Ellipse x:Name="Bus1Indicator" Width="30" Height="30" 
-                                Fill="#F44336" Stroke="White" StrokeThickness="2" 
-                                Canvas.Left="105" Canvas.Top="65" Panel.ZIndex="100"/>
-                        
-                        <Ellipse x:Name="Bus2Indicator" Width="30" Height="30" 
-                                Fill="#2196F3" Stroke="White" StrokeThickness="2" 
-                                Canvas.Left="805" Canvas.Top="325" Panel.ZIndex="100"/>
-                        
-                        <Ellipse x:Name="Bus3Indicator" Width="30" Height="30" 
-                                Fill="#FFC107" Stroke="White" StrokeThickness="2" 
-                                Canvas.Left="1065" Canvas.Top="345" Panel.ZIndex="100"/>
-                        
-                        <Ellipse x:Name="Bus4Indicator" Width="30" Height="30" 
-                                Fill="#4CAF50" Stroke="White" StrokeThickness="2" 
-                                Canvas.Left="865" Canvas.Top="805" Panel.ZIndex="100"/>
-                        
+                        <!-- Bus Icons Container - dynamically populated with tourist slots -->
+                        <Canvas x:Name="BusIconsContainer" Width="1408" Height="1056" Panel.ZIndex="100"/>
+
                         <!-- Attraction Dots Container -->
                         <Canvas x:Name="AttractionDotsContainer" Width="1408" Height="1056" Panel.ZIndex="90"/>
                     </Canvas>
