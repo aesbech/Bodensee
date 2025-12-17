@@ -493,6 +493,266 @@ After implementing each phase:
 
 ---
 
+## **Phase 6: AI System Improvements (2-3 hours)** 🔴 PARTIALLY WORKING
+
+### **Current Status**
+- ✅ 4 AI strategies implemented (Aggressive, Defensive, Balanced, Opportunistic)
+- ✅ AI decision making for bus selection, morning actions, movement
+- ✅ AI auto-play integration in UI
+- 🔴 **CRITICAL BUG**: Only BuildAttraction all-day action executes
+- ❌ Missing Ferry action support
+- ❌ No headless game runner for testing
+
+### **Critical Fixes Needed**
+
+#### **1. Fix All-Day Action Execution (30 min)** 🔴 CRITICAL
+
+**Problem:**
+```csharp
+// In UI/MainWindow.xaml.cs AIPlayButton_Click (line 749)
+// ONLY BuildAttraction is handled!
+if (decision.AllDayAction == AllDayAction.BuildAttraction && ...)
+```
+
+**Missing handlers:**
+- ❌ AddTwoPips
+- ❌ RerollTourist
+- ❌ GiveTour
+- ❌ BuildAttractionDiscount (Contractor)
+- ❌ All other all-day actions
+
+**Solution:**
+Add complete switch statement in `AIPlayButton_Click`:
+
+```csharp
+// All-day action execution
+if (decision.AllDayAction.HasValue)
+{
+    var arrivalCity = _gameState.Board.GetCity(decision.DestinationCity ?? decision.SelectedBus.CurrentCity);
+
+    switch (decision.AllDayAction.Value)
+    {
+        case AllDayAction.BuildAttraction:
+            // Existing code
+            break;
+
+        case AllDayAction.AddTwoPips:
+            // Select random tourist and add pips
+            var tourist = decision.SelectedBus.Tourists
+                .OrderBy(t => _random.Next())
+                .FirstOrDefault();
+            if (tourist != null)
+            {
+                tourist.Money += 2;
+                Log($"AI added 2 pips to tourist");
+            }
+            break;
+
+        case AllDayAction.RerollTourist:
+            // Reroll tourist with least money
+            var poorTourist = decision.SelectedBus.Tourists
+                .OrderBy(t => t.Money)
+                .FirstOrDefault();
+            if (poorTourist != null)
+            {
+                // Reroll logic
+                Log($"AI rerolled tourist");
+            }
+            break;
+
+        case AllDayAction.GiveTour:
+            // Give immediate tour
+            var extraTour = _engine.GiveBusTour(decision.SelectedBus, _currentTurnContext);
+            Log($"AI gave extra tour: {extraTour.AttractionsVisited.Count} attractions");
+            break;
+
+        // Add remaining cases...
+    }
+}
+```
+
+#### **2. Add Ferry Action Support (30 min)**
+
+**Problem:** AI strategies don't recognize Ferry as morning action option
+
+**Solution:**
+In AI strategies, add Ferry handling:
+
+```csharp
+// In each strategy's MakeDecision method
+if (currentCity.MorningAction == MorningAction.Ferry && currentCity.IsPort)
+{
+    decision.MorningAction = MorningAction.Ferry;
+    context.UsedMorningAction = MorningAction.Ferry;
+
+    // Ferry allows movement to ANY port
+    // Evaluate all ports instead of just connected cities
+}
+```
+
+#### **3. Improve Tourist Preference Handling (30 min)**
+
+**Problem:** AI doesn't fully consider which tourists can visit attractions
+
+**Current code** in `EvaluateCity`:
+```csharp
+var eligibleTourists = bus.Tourists
+    .Where(t => context.AllAttractionsAppeal || t.Category == attraction.Category)
+    .Where(t => t.Money >= attraction.Value)
+    .ToList();
+```
+
+**Enhancement needed:**
+- Consider appeal system settings
+- Factor in IgnoreFirstAppeal context
+- Prioritize cities with matching tourist categories
+
+### **Headless Game Runner (1-2 hours)** ❌ NOT IMPLEMENTED
+
+Create `HeadlessGameRunner.cs` for automated testing:
+
+```csharp
+namespace BodenseeTourismus.Testing
+{
+    public class HeadlessGameRunner
+    {
+        private GameSettings _settings;
+        private GameAnalytics _analytics;
+
+        public HeadlessGameRunner(GameSettings settings = null)
+        {
+            _settings = settings ?? new GameSettings();
+        }
+
+        public GameResult RunGame(List<string> aiStrategies)
+        {
+            // Setup game with AI players only
+            var playerConfigs = aiStrategies.Select((strategy, i) =>
+                ($"AI-{strategy}", true, strategy)).ToList();
+
+            var setup = new GameSetup();
+            var state = setup.CreateGame(playerConfigs, _settings);
+            var engine = new GameEngine(state);
+            var aiController = new AIController(state.Random);
+
+            // Run game loop
+            while (!state.GameEnded)
+            {
+                var decision = aiController.GetAIDecision(state, engine,
+                    state.CurrentPlayer.AIStrategy);
+
+                // Execute decision
+                ExecuteAIDecision(state, engine, decision);
+
+                // End turn
+                state.NextTurn();
+            }
+
+            return new GameResult
+            {
+                Winner = state.GetWinner(),
+                TotalTurns = state.TurnNumber,
+                FinalScores = state.Players.ToDictionary(p => p.Name, p => p.Money)
+            };
+        }
+
+        public BatchResult RunBatch(int games, List<string> strategies)
+        {
+            var results = new List<GameResult>();
+
+            for (int i = 0; i < games; i++)
+            {
+                results.Add(RunGame(strategies));
+            }
+
+            return new BatchResult
+            {
+                TotalGames = games,
+                WinRates = CalculateWinRates(results),
+                AverageTurns = results.Average(r => r.TotalTurns),
+                AverageScores = CalculateAverageScores(results)
+            };
+        }
+    }
+
+    public class GameResult
+    {
+        public Player Winner { get; set; }
+        public int TotalTurns { get; set; }
+        public Dictionary<string, int> FinalScores { get; set; }
+    }
+
+    public class BatchResult
+    {
+        public int TotalGames { get; set; }
+        public Dictionary<string, double> WinRates { get; set; }
+        public double AverageTurns { get; set; }
+        public Dictionary<string, double> AverageScores { get; set; }
+    }
+}
+```
+
+### **Testing Command-Line Tool (30 min)**
+
+Create `Program.cs` for headless testing:
+
+```csharp
+// In a new Console project or Program.cs
+class Program
+{
+    static void Main(string[] args)
+    {
+        var runner = new HeadlessGameRunner();
+
+        Console.WriteLine("Running AI strategy comparison...");
+
+        var strategies = new List<string>
+        {
+            "Aggressive", "Defensive", "Balanced", "Opportunistic"
+        };
+
+        var results = runner.RunBatch(100, strategies);
+
+        Console.WriteLine($"\n=== Results from {results.TotalGames} games ===");
+        Console.WriteLine("\nWin Rates:");
+        foreach (var wr in results.WinRates)
+        {
+            Console.WriteLine($"  {wr.Key}: {wr.Value:P2}");
+        }
+
+        Console.WriteLine($"\nAverage Game Length: {results.AverageTurns:F1} turns");
+
+        Console.WriteLine("\nAverage Scores:");
+        foreach (var score in results.AverageScores)
+        {
+            Console.WriteLine($"  {score.Key}: €{score.Value:F1}");
+        }
+    }
+}
+```
+
+### **Priority Order**
+
+**Must Fix (Critical):**
+1. ✅ Fix all-day action execution - **30 minutes**
+   - Currently breaks AI gameplay
+
+**Should Fix (High Priority):**
+2. Add Ferry action support - **30 minutes**
+   - Limits AI strategic options
+3. Improve tourist preference handling - **30 minutes**
+   - Makes AI smarter
+
+**Nice to Have (Testing):**
+4. Implement HeadlessGameRunner - **1-2 hours**
+   - Enables automated testing
+5. Create testing CLI tool - **30 minutes**
+   - Strategy comparison and balance testing
+
+**Total Time: ~2-3 hours for complete AI improvements**
+
+---
+
 ## **Known Issues to Address**
 
 ### **Current Limitations**

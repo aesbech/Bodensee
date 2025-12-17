@@ -745,14 +745,109 @@ namespace BodenseeTourismus.UI
                     _currentTurnContext.TouristsRuined = tourResult.TouristsRuined;
                 }
                 
-                // All-day action
-                if (decision.AllDayAction == AllDayAction.BuildAttraction && decision.ActionParameters.ContainsKey("Attraction"))
+                // All-day action - complete implementation for all action types
+                if (decision.AllDayAction.HasValue)
                 {
-                    var attraction = decision.ActionParameters["Attraction"] as Attraction;
-                    var cityName = decision.ActionParameters["City"] as string;
-                    if (_engine.BuildAttraction(attraction, cityName))
+                    var arrivalCity = _gameState.Board.GetCity(decision.DestinationCity ?? decision.SelectedBus.CurrentCity);
+
+                    switch (decision.AllDayAction.Value)
                     {
-                        Log($"AI built {attraction.Name} in {cityName}");
+                        case AllDayAction.BuildAttraction:
+                            if (decision.ActionParameters.ContainsKey("Attraction"))
+                            {
+                                var attraction = decision.ActionParameters["Attraction"] as Attraction;
+                                var cityName = decision.ActionParameters["City"] as string;
+                                if (_engine.BuildAttraction(attraction, cityName))
+                                {
+                                    Log($"AI built {attraction.GetName(_gameSettings.Language)} in {cityName}");
+                                    _gameState.Market.Refill(attraction.Category, _gameState.Settings.MarketRefillAmount);
+                                }
+                            }
+                            break;
+
+                        case AllDayAction.BuildAttractionDiscount:
+                            // Contractor - build with discount (already in decision parameters)
+                            if (decision.ActionParameters.ContainsKey("Attraction"))
+                            {
+                                var attraction = decision.ActionParameters["Attraction"] as Attraction;
+                                var cityName = decision.ActionParameters["City"] as string;
+                                int discount = _gameSettings.ContractorDiscountAmount;
+                                if (_engine.BuildAttraction(attraction, cityName, discount))
+                                {
+                                    Log($"AI built {attraction.GetName(_gameSettings.Language)} with €{discount} discount in {cityName}");
+                                    _gameState.Market.Refill(attraction.Category, _gameState.Settings.MarketRefillAmount);
+                                }
+                            }
+                            break;
+
+                        case AllDayAction.AddTwoPips:
+                            if (decision.SelectedBus.Tourists.Any())
+                            {
+                                var randomTourist = decision.SelectedBus.Tourists[_gameState.Random.Next(decision.SelectedBus.Tourists.Count)];
+                                randomTourist.Money += 2;
+                                Log($"AI added 2€ to a {randomTourist.Category} tourist (now €{randomTourist.Money})");
+                            }
+                            break;
+
+                        case AllDayAction.AddTwoPipsGreen:
+                        case AllDayAction.AddTwoPipsBlue:
+                        case AllDayAction.AddTwoPipsRed:
+                        case AllDayAction.AddTwoPipsYellow:
+                            // Color-specific zentrum actions
+                            AttractionCategory targetCategory = decision.AllDayAction.Value switch
+                            {
+                                AllDayAction.AddTwoPipsGreen => AttractionCategory.Nature,
+                                AllDayAction.AddTwoPipsBlue => AttractionCategory.Water,
+                                AllDayAction.AddTwoPipsRed => AttractionCategory.Culture,
+                                AllDayAction.AddTwoPipsYellow => AttractionCategory.Gastronomy,
+                                _ => AttractionCategory.Nature
+                            };
+                            var colorTourist = decision.SelectedBus.Tourists.FirstOrDefault(t => t.Category == targetCategory);
+                            if (colorTourist != null)
+                            {
+                                colorTourist.Money += 2;
+                                Log($"AI added 2€ to {targetCategory} tourist (now €{colorTourist.Money})");
+                            }
+                            break;
+
+                        case AllDayAction.RerollTourist:
+                            if (decision.SelectedBus.Tourists.Any())
+                            {
+                                // Reroll tourist with least money
+                                var poorestTourist = decision.SelectedBus.Tourists.OrderBy(t => t.Money).First();
+                                int oldMoney = poorestTourist.Money;
+                                int newMoney = _gameState.Random.Next(1, 7);
+                                poorestTourist.Money = newMoney;
+                                Log($"AI rerolled {poorestTourist.Category} tourist: €{oldMoney} → €{newMoney}");
+                            }
+                            break;
+
+                        case AllDayAction.GiveTour:
+                            // Give immediate extra tour
+                            var extraTourResult = _engine.GiveBusTour(decision.SelectedBus, _currentTurnContext);
+                            Log($"AI gave extra tour: {extraTourResult.AttractionsVisited.Count} attractions visited, {extraTourResult.TouristsRuined} ruined");
+                            _currentTurnContext.TouristsRuined += extraTourResult.TouristsRuined;
+                            break;
+
+                        case AllDayAction.BusDispatch:
+                            // Move another bus - AI needs to pick which bus and where
+                            var otherBuses = _gameState.Board.Buses.Where(b => b.Id != decision.SelectedBus.Id).ToList();
+                            if (otherBuses.Any())
+                            {
+                                var busToMove = otherBuses[_gameState.Random.Next(otherBuses.Count)];
+                                var validDests = _engine.GetValidDestinations(busToMove, new TurnContext());
+                                if (validDests.Any())
+                                {
+                                    var randomDest = validDests[_gameState.Random.Next(validDests.Count)];
+                                    busToMove.CurrentCity = randomDest;
+                                    Log($"AI dispatched Bus {busToMove.Id + 1} to {randomDest}");
+                                }
+                            }
+                            break;
+
+                        default:
+                            Log($"AI attempted to use {decision.AllDayAction} but no handler implemented");
+                            break;
                     }
                 }
                 
