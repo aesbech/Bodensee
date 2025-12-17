@@ -493,17 +493,18 @@ After implementing each phase:
 
 ---
 
-## **Phase 6: AI System Improvements (1-2 hours)** ✅ MOSTLY COMPLETE
+## **Phase 6: AI System Improvements** ✅ COMPLETE
 
 ### **Current Status**
 - ✅ 4 AI strategies implemented (Aggressive, Defensive, Balanced, Opportunistic)
-- ✅ AI decision making for bus selection, morning actions, movement
+- ✅ AI decision making for bus selection, morning actions, movement, **AND Ferry**
 - ✅ AI auto-play integration in UI
 - ✅ **FIXED**: All all-day actions now execute correctly (Dec 2024)
 - ✅ **FIXED**: Actions now respect game settings (ZentrumPipsBonus, CasinoRerollsPerBus, GiveTourAffectsWholeBus)
 - ✅ **FIXED**: Gray attraction market refill now handled correctly
-- ❌ Missing Ferry action support
-- ❌ No headless game runner for testing
+- ✅ **NEW**: Ferry action support added to all AI strategies (Dec 2024)
+- ✅ **NEW**: HeadlessGameRunner for automated testing (Dec 2024)
+- ✅ **NEW**: Comprehensive analytics with turn-by-turn state logging (Dec 2024)
 
 ### **Completed Fixes** ✅
 
@@ -525,49 +526,76 @@ After implementing each phase:
 
 All AI actions now behave identically to human player actions and respect all game settings.
 
+#### **2. Ferry Action Support** ✅ IMPLEMENTED (Dec 2024)
+
+**Solution Implemented:**
+- Added `ShouldUseFerry()` helper method in BaseAIStrategy
+- Evaluates if Ferry opens better opportunities than normal movement
+- Compares destinations reachable via Ferry vs normal connections
+- All 4 strategies now check and use Ferry intelligently:
+  - **Aggressive**: Uses Ferry when it provides access to high-income ports
+  - **Defensive**: Uses Ferry to avoid other players' attractions
+  - **Balanced**: Uses Ferry when strategic advantage is clear
+  - **Opportunistic**: Uses Ferry to exploit high-value opportunities
+
+**File:** `AI/AIController.cs` (lines 115-148, updated all strategies)
+
+#### **3. HeadlessGameRunner** ✅ IMPLEMENTED (Dec 2024)
+
+**Implementation:**
+New file `AI/HeadlessGameRunner.cs` provides complete automated testing framework:
+
+**Features:**
+- `RunGame(aiStrategies, gameNumber)`: Execute single game with AI-only players
+- `RunBatch(gameCount, aiStrategies)`: Run multiple games for statistical analysis
+- `GameResult` class: Detailed per-game results with winner, scores, player statistics
+- `BatchResult` class: Aggregate stats including win counts, average scores, average money per turn
+- Support for seeded random (reproducible testing)
+- Verbose logging mode for debugging
+- 1000-turn safety limit to prevent infinite loops
+- Complete all-day action execution for AI players
+
+**Usage Example:**
+```csharp
+var runner = new HeadlessGameRunner(settings, seed: 12345, verbose: true);
+var batch = runner.RunBatch(100, new List<string> { "Aggressive", "Defensive", "Balanced", "Opportunistic" });
+Console.WriteLine($"Aggressive won {batch.WinCounts["AI-Aggressive"]} times");
+```
+
+#### **4. Comprehensive Analytics** ✅ IMPLEMENTED (Dec 2024)
+
+**New Features:**
+- `GameStateSnapshot`: Captures complete game state at turn start and end
+- `BusStateSnapshot`: Tracks bus position + all 4 tourist slots (category + money)
+- `TouristSnapshot`: Logs tourist category and money value
+- `PlayerStateSnapshot`: Tracks player money and attraction count
+- `TurnSummary` enhanced with:
+  - StateBeforeTurn and StateAfterTurn
+  - MoneyBefore and MoneyAfter per turn
+  - Complete turn-by-turn state tracking
+
+**Enhanced CSV Export:**
+Now includes 4 detailed sections:
+1. **Turn Summary**: Overview of each turn (bus movement, actions, money changes)
+2. **Bus State per Turn**: All 4 buses with all tourist categories and values
+3. **Player State per Turn**: Money and attraction counts
+4. **Game Actions**: Detailed action log with timestamps
+
+**Integration:**
+- MainWindow.xaml.cs updated to pass `gameState` to `StartTurn()` and `EndTurn()`
+- Every turn logged with complete game state
+- Perfect for statistical analysis and debugging
+
+**File:** `Analytics/GameAnalytics.cs` (enhanced classes and methods)
+
 ---
 
-### **Remaining Improvements**
+### **Optional Future Enhancements**
 
-#### **1. Add Ferry Action Support (30 min)**
+#### **1. Improve Tourist Preference Handling (30 min)**
 
-**Problem:** AI strategies don't recognize Ferry as morning action option
-
-**Solution:**
-In AI strategies, add Ferry handling:
-
-```csharp
-// In each strategy's MakeDecision method
-if (currentCity.MorningAction == MorningAction.Ferry && currentCity.IsPort)
-{
-    decision.MorningAction = MorningAction.Ferry;
-    context.UsedMorningAction = MorningAction.Ferry;
-
-    // Ferry allows movement to ANY port
-    // Evaluate all ports instead of just connected cities
-}
-```
-
-#### **2. Improve Tourist Preference Handling (30 min)**
-
-**Problem:** AI doesn't fully consider which tourists can visit attractions
-
-**Current code** in `EvaluateCity`:
-```csharp
-var eligibleTourists = bus.Tourists
-    .Where(t => context.AllAttractionsAppeal || t.Category == attraction.Category)
-    .Where(t => t.Money >= attraction.Value)
-    .ToList();
-```
-
-**Enhancement needed:**
-- Consider appeal system settings
-- Factor in IgnoreFirstAppeal context
-- Prioritize cities with matching tourist categories
-
-### **Headless Game Runner (1-2 hours)** ❌ NOT IMPLEMENTED
-
-Create `HeadlessGameRunner.cs` for automated testing:
+**Enhancement opportunity:**
+Current AI evaluates cities based on attraction values, but could be improved to:
 
 ```csharp
 namespace BodenseeTourismus.Testing
