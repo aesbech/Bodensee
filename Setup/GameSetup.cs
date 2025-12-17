@@ -73,21 +73,21 @@ namespace BodenseeTourismus.Setup
                     new List<string> { "Konstanz", "Weinfelden" }) },
                 
                 // North central section
-                { "Ravensburg", (false, false, 3, MorningAction.AllAttractionsAppeal, AllDayAction.GiveTour, 
-                    new List<string> { "Überlingen", "Wangen" }) },
+                { "Ravensburg", (false, false, 3, MorningAction.AllAttractionsAppeal, AllDayAction.GiveTour,
+                    new List<string> { "Überlingen", "Wangen", "Friedrichshafen" }) },
                 
                 { "Wangen", (false, false, 3, MorningAction.IgnoreFirstAppeal, AllDayAction.BuildAttraction, 
                     new List<string> { "Ravensburg", "Lindau" }) },
                 
-                // Lake section (ports) - ONLY solid red line connections (dotted lines are ferry-only)
+                // Lake section (ports) - solid red line connections
                 { "Meersburg", (true, true, 3, MorningAction.Ferry, AllDayAction.BuildAttraction,
-                    new List<string> { "Überlingen" }) },
+                    new List<string> { "Überlingen", "Friedrichshafen" }) },
 
                 { "Friedrichshafen", (true, true, 5, MorningAction.Ferry, AllDayAction.GiveTour,
-                    new List<string> { }) },  // Ferry-only access - no solid road connections!
+                    new List<string> { "Meersburg", "Lindau", "Ravensburg" }) },
 
                 { "Lindau", (true, true, 4, MorningAction.Ferry, AllDayAction.RerollTourist,
-                    new List<string> { "Wangen", "Bregenz" }) },
+                    new List<string> { "Friedrichshafen", "Wangen", "Bregenz" }) },
                 
                 { "Bregenz", (true, true, 3, MorningAction.IncreaseValue, AllDayAction.GiveTour, 
                     new List<string> { "Lindau", "Hard", "Dornbirn" }) },
