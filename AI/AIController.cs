@@ -111,6 +111,40 @@ namespace BodenseeTourismus.AI
 
             return movableBuses.OrderByDescending(b => b.Tourists.Count).First();
         }
+
+        protected bool ShouldUseFerry(GameState state, Bus bus, City currentCity, TurnContext context)
+        {
+            // Check if Ferry is available
+            if (currentCity.MorningAction != MorningAction.Ferry || !currentCity.IsPort)
+                return false;
+
+            // Evaluate if Ferry opens better opportunities
+            var normalDestinations = currentCity.Connections;
+            var ferryDestinations = state.Board.Cities.Values
+                .Where(c => c.IsPort && c.Name != currentCity.Name)
+                .Select(c => c.Name)
+                .ToList();
+
+            // Ferry is valuable if it opens access to ports not normally reachable
+            var extraPorts = ferryDestinations.Except(normalDestinations).ToList();
+            if (!extraPorts.Any()) return false;
+
+            // Check if any extra port has high value
+            var bestExtraPortScore = extraPorts
+                .Max(port => EvaluateCity(state, bus, port, context));
+            var bestNormalScore = normalDestinations
+                .Any() ? normalDestinations.Max(dest => EvaluateCity(state, bus, dest, context)) : 0;
+
+            return bestExtraPortScore > bestNormalScore;
+        }
+
+        protected List<string> GetAllPortCities(GameState state)
+        {
+            return state.Board.Cities.Values
+                .Where(c => c.IsPort)
+                .Select(c => c.Name)
+                .ToList();
+        }
     }
 
     // Aggressive strategy: Maximize immediate income
@@ -131,16 +165,23 @@ namespace BodenseeTourismus.AI
 
             var currentCity = state.Board.GetCity(decision.SelectedBus.CurrentCity);
 
-            // Always try to increase value if available
-            if (currentCity.MorningAction == MorningAction.IncreaseValue)
+            // Check if Ferry provides strategic advantage
+            bool useFerry = ShouldUseFerry(state, decision.SelectedBus, currentCity, context);
+
+            // Always try to increase value if available, unless Ferry is better
+            if (!useFerry && currentCity.MorningAction == MorningAction.IncreaseValue)
             {
                 decision.MorningAction = MorningAction.IncreaseValue;
                 context.IncreaseValue = true;
             }
-            else if (currentCity.MorningAction == MorningAction.AllAttractionsAppeal)
+            else if (!useFerry && currentCity.MorningAction == MorningAction.AllAttractionsAppeal)
             {
                 decision.MorningAction = MorningAction.AllAttractionsAppeal;
                 context.AllAttractionsAppeal = true;
+            }
+            else if (useFerry)
+            {
+                decision.MorningAction = MorningAction.Ferry;
             }
 
             context.UsedMorningAction = decision.MorningAction;
@@ -235,11 +276,18 @@ namespace BodenseeTourismus.AI
 
             var currentCity = state.Board.GetCity(decision.SelectedBus.CurrentCity);
 
+            // Check if Ferry can help avoid other players
+            bool useFerry = ShouldUseFerry(state, decision.SelectedBus, currentCity, context);
+
             // Prefer actions that avoid other players' attractions
-            if (currentCity.MorningAction == MorningAction.IgnoreFirstAppeal)
+            if (!useFerry && currentCity.MorningAction == MorningAction.IgnoreFirstAppeal)
             {
                 decision.MorningAction = MorningAction.IgnoreFirstAppeal;
                 context.IgnoreNextAppeal = true;
+            }
+            else if (useFerry)
+            {
+                decision.MorningAction = MorningAction.Ferry;
             }
 
             context.UsedMorningAction = decision.MorningAction;
@@ -326,8 +374,16 @@ namespace BodenseeTourismus.AI
 
             var currentCity = state.Board.GetCity(decision.SelectedBus.CurrentCity);
 
+            // Check if Ferry provides strategic advantage
+            bool useFerry = ShouldUseFerry(state, decision.SelectedBus, currentCity, context);
+
             // Choose morning action based on situation
-            if (currentCity.MorningAction.HasValue)
+            if (useFerry)
+            {
+                decision.MorningAction = MorningAction.Ferry;
+                context.UsedMorningAction = decision.MorningAction;
+            }
+            else if (currentCity.MorningAction.HasValue)
             {
                 var myAttractionCount = state.Board.Cities.Values
                     .SelectMany(c => c.Attractions)
@@ -464,12 +520,20 @@ namespace BodenseeTourismus.AI
 
             var currentCity = state.Board.GetCity(decision.SelectedBus.CurrentCity);
 
+            // Check if Ferry opens profitable opportunities
+            bool useFerry = ShouldUseFerry(state, decision.SelectedBus, currentCity, context);
+
             // Use whichever morning action maximizes opportunity
-            if (currentCity.MorningAction.HasValue)
+            if (useFerry)
+            {
+                decision.MorningAction = MorningAction.Ferry;
+                context.UsedMorningAction = decision.MorningAction;
+            }
+            else if (currentCity.MorningAction.HasValue)
             {
                 decision.MorningAction = currentCity.MorningAction;
                 context.UsedMorningAction = decision.MorningAction;
-                
+
                 if (decision.MorningAction == MorningAction.IncreaseValue)
                     context.IncreaseValue = true;
                 if (decision.MorningAction == MorningAction.AllAttractionsAppeal)

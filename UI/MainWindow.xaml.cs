@@ -95,11 +95,11 @@ namespace BodenseeTourismus.UI
         private void StartPlayerTurn()
         {
             _currentTurnContext = new TurnContext();
-            _analytics.StartTurn(_gameState.CurrentPlayer.Id, _gameState.CurrentPlayer.Name);
-            
+            _analytics.StartTurn(_gameState.CurrentPlayer.Id, _gameState.CurrentPlayer.Name, _gameState);
+
             Log($"--- {_gameState.CurrentPlayer.Name}'s turn ---");
             UpdateUI();
-            
+
             // Auto-play for AI
             if (_gameState.CurrentPlayer.IsAI)
             {
@@ -688,9 +688,9 @@ namespace BodenseeTourismus.UI
             
             // Check game end
             _engine.CheckGameEnd();
-            
-            _analytics.EndTurn();
-            
+
+            _analytics.EndTurn(_gameState);
+
             if (_gameState.GameEnded)
             {
                 var winner = _gameState.GetWinner();
