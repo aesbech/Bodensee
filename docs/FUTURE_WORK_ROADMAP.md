@@ -493,85 +493,43 @@ After implementing each phase:
 
 ---
 
-## **Phase 6: AI System Improvements (2-3 hours)** 🔴 PARTIALLY WORKING
+## **Phase 6: AI System Improvements (1-2 hours)** ✅ MOSTLY COMPLETE
 
 ### **Current Status**
 - ✅ 4 AI strategies implemented (Aggressive, Defensive, Balanced, Opportunistic)
 - ✅ AI decision making for bus selection, morning actions, movement
 - ✅ AI auto-play integration in UI
-- 🔴 **CRITICAL BUG**: Only BuildAttraction all-day action executes
+- ✅ **FIXED**: All all-day actions now execute correctly (Dec 2024)
+- ✅ **FIXED**: Actions now respect game settings (ZentrumPipsBonus, CasinoRerollsPerBus, GiveTourAffectsWholeBus)
+- ✅ **FIXED**: Gray attraction market refill now handled correctly
 - ❌ Missing Ferry action support
 - ❌ No headless game runner for testing
 
-### **Critical Fixes Needed**
+### **Completed Fixes** ✅
 
-#### **1. Fix All-Day Action Execution (30 min)** 🔴 CRITICAL
+#### **1. All-Day Action Execution** ✅ FIXED (Dec 2024)
 
-**Problem:**
-```csharp
-// In UI/MainWindow.xaml.cs AIPlayButton_Click (line 749)
-// ONLY BuildAttraction is handled!
-if (decision.AllDayAction == AllDayAction.BuildAttraction && ...)
-```
+**Problem:** Only BuildAttraction was executing for AI players (9 lines of code, 1 if statement)
 
-**Missing handlers:**
-- ❌ AddTwoPips
-- ❌ RerollTourist
-- ❌ GiveTour
-- ❌ BuildAttractionDiscount (Contractor)
-- ❌ All other all-day actions
+**Fixed Issues:**
+- ✅ All 10 AllDayAction types now execute (complete switch statement, 105 lines)
+- ✅ AddTwoPips: Now uses ZentrumPipsBonus setting, caps at 6 (was hardcoded 2, no cap)
+- ✅ AddTwoPipsGreen/Blue/Red/Yellow: Now uses ZentrumPipsBonus setting, caps at 6
+- ✅ RerollTourist: Now uses CasinoRerollsPerBus setting, avoids 1s, affects all buses in city
+- ✅ GiveTour: Now respects GiveTourAffectsWholeBus setting
+- ✅ BuildAttraction: Now properly calls RefillGray() for gray attractions
+- ✅ BuildAttractionDiscount: Now properly calls RefillGray() for gray attractions
+- ✅ BusDispatch: Fully implemented with valid move logic
 
-**Solution:**
-Add complete switch statement in `AIPlayButton_Click`:
+**Implementation:** Complete switch statement in `AIPlayButton_Click` (lines 753-877)
 
-```csharp
-// All-day action execution
-if (decision.AllDayAction.HasValue)
-{
-    var arrivalCity = _gameState.Board.GetCity(decision.DestinationCity ?? decision.SelectedBus.CurrentCity);
+All AI actions now behave identically to human player actions and respect all game settings.
 
-    switch (decision.AllDayAction.Value)
-    {
-        case AllDayAction.BuildAttraction:
-            // Existing code
-            break;
+---
 
-        case AllDayAction.AddTwoPips:
-            // Select random tourist and add pips
-            var tourist = decision.SelectedBus.Tourists
-                .OrderBy(t => _random.Next())
-                .FirstOrDefault();
-            if (tourist != null)
-            {
-                tourist.Money += 2;
-                Log($"AI added 2 pips to tourist");
-            }
-            break;
+### **Remaining Improvements**
 
-        case AllDayAction.RerollTourist:
-            // Reroll tourist with least money
-            var poorTourist = decision.SelectedBus.Tourists
-                .OrderBy(t => t.Money)
-                .FirstOrDefault();
-            if (poorTourist != null)
-            {
-                // Reroll logic
-                Log($"AI rerolled tourist");
-            }
-            break;
-
-        case AllDayAction.GiveTour:
-            // Give immediate tour
-            var extraTour = _engine.GiveBusTour(decision.SelectedBus, _currentTurnContext);
-            Log($"AI gave extra tour: {extraTour.AttractionsVisited.Count} attractions");
-            break;
-
-        // Add remaining cases...
-    }
-}
-```
-
-#### **2. Add Ferry Action Support (30 min)**
+#### **1. Add Ferry Action Support (30 min)**
 
 **Problem:** AI strategies don't recognize Ferry as morning action option
 
@@ -590,7 +548,7 @@ if (currentCity.MorningAction == MorningAction.Ferry && currentCity.IsPort)
 }
 ```
 
-#### **3. Improve Tourist Preference Handling (30 min)**
+#### **2. Improve Tourist Preference Handling (30 min)**
 
 **Problem:** AI doesn't fully consider which tourists can visit attractions
 
