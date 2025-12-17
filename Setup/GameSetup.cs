@@ -57,31 +57,31 @@ namespace BodenseeTourismus.Setup
             var cityData = new Dictionary<string, (bool IsPort, bool CanBuildWater, int AttractionSpaces, MorningAction? Morning, AllDayAction? AllDay, List<string> Connections)>
             {
                 // Northwest section
-                { "Bodman-Ludwigshafen", (false, false, 3, MorningAction.IncreaseValue, AllDayAction.BuildAttraction, 
-                    new List<string> { "Überlingen", "Radolfzelt" }) },
-                
-                { "Überlingen", (false, false, 3, MorningAction.IgnoreFirstAppeal, AllDayAction.AddTwoPips, 
-                    new List<string> { "Bodman-Ludwigshafen", "Meersburg", "Ravensburg" }) },
-                
-                { "Radolfzelt", (false, false, 3, MorningAction.IgnoreFirstAppeal, AllDayAction.RerollTourist, 
+                { "Bodman-Ludwigshafen", (false, false, 3, MorningAction.IncreaseValue, AllDayAction.BuildAttraction,
+                    new List<string> { "Überlingen", "Radolfzell" }) },
+
+                { "Überlingen", (false, false, 3, MorningAction.IgnoreFirstAppeal, AllDayAction.AddTwoPips,
+                    new List<string> { "Bodman-Ludwigshafen", "Meersburg" }) },
+
+                { "Radolfzell", (false, false, 3, MorningAction.IgnoreFirstAppeal, AllDayAction.RerollTourist,
                     new List<string> { "Bodman-Ludwigshafen", "Konstanz" }) },
-                
-                { "Konstanz", (true, true, 4, MorningAction.Ferry, AllDayAction.GiveTour, 
-                    new List<string> { "Radolfzelt", "Kreuzlingen" }) },
-                
-                { "Kreuzlingen", (true, true, 4, MorningAction.AllAttractionsAppeal, AllDayAction.BuildAttraction, 
-                    new List<string> { "Konstanz", "Weinfelden" }) },
+
+                { "Konstanz", (true, true, 4, MorningAction.Ferry, AllDayAction.GiveTour,
+                    new List<string> { "Radolfzell", "Kreuzlingen" }) },
+
+                { "Kreuzlingen", (true, true, 4, MorningAction.AllAttractionsAppeal, AllDayAction.BuildAttraction,
+                    new List<string> { "Konstanz", "Weinfelden", "Romanshorn" }) },
                 
                 // North central section
                 { "Ravensburg", (false, false, 3, MorningAction.AllAttractionsAppeal, AllDayAction.GiveTour,
-                    new List<string> { "Überlingen", "Wangen", "Friedrichshafen" }) },
-                
-                { "Wangen", (false, false, 3, MorningAction.IgnoreFirstAppeal, AllDayAction.BuildAttraction, 
+                    new List<string> { "Meersburg", "Wangen", "Friedrichshafen" }) },
+
+                { "Wangen", (false, false, 3, MorningAction.IgnoreFirstAppeal, AllDayAction.BuildAttraction,
                     new List<string> { "Ravensburg", "Lindau" }) },
-                
+
                 // Lake section (ports) - solid red line connections
                 { "Meersburg", (true, true, 3, MorningAction.Ferry, AllDayAction.BuildAttraction,
-                    new List<string> { "Überlingen", "Friedrichshafen" }) },
+                    new List<string> { "Überlingen", "Friedrichshafen", "Ravensburg" }) },
 
                 { "Friedrichshafen", (true, true, 5, MorningAction.Ferry, AllDayAction.GiveTour,
                     new List<string> { "Meersburg", "Lindau", "Ravensburg" }) },
@@ -92,33 +92,33 @@ namespace BodenseeTourismus.Setup
                 { "Bregenz", (true, true, 3, MorningAction.IncreaseValue, AllDayAction.GiveTour, 
                     new List<string> { "Lindau", "Hard", "Dornbirn" }) },
                 
-                { "Hard", (true, true, 3, MorningAction.IgnoreFirstAppeal, AllDayAction.RerollTourist, 
-                    new List<string> { "Bregenz", "Rorschach" }) },
-                
-                { "Rorschach", (true, true, 3, MorningAction.Ferry, AllDayAction.AddTwoPips, 
+                { "Hard", (true, true, 3, MorningAction.IgnoreFirstAppeal, AllDayAction.RerollTourist,
+                    new List<string> { "Bregenz", "Rorschach", "Dornbirn" }) },
+
+                { "Rorschach", (true, true, 3, MorningAction.Ferry, AllDayAction.AddTwoPips,
                     new List<string> { "Hard", "St. Gallen", "Arbon" }) },
-                
-                { "Arbon", (true, true, 3, MorningAction.IncreaseValue, AllDayAction.BuildAttraction, 
+
+                { "Arbon", (true, true, 3, MorningAction.IncreaseValue, AllDayAction.BuildAttraction,
                     new List<string> { "Rorschach", "Romanshorn" }) },
-                
-                { "Romanshorn", (true, true, 3, MorningAction.Ferry, AllDayAction.GiveTour, 
-                    new List<string> { "Arbon", "Amrisvil" }) },
+
+                { "Romanshorn", (true, true, 3, MorningAction.Ferry, AllDayAction.GiveTour,
+                    new List<string> { "Arbon", "Kreuzlingen" }) },
                 
                 // South section
-                { "Weinfelden", (false, false, 3, MorningAction.IgnoreFirstAppeal, AllDayAction.AddTwoPips, 
-                    new List<string> { "Kreuzlingen", "Amrisvil" }) },
-                
-                { "Amrisvil", (false, false, 3, MorningAction.AllAttractionsAppeal, AllDayAction.RerollTourist, 
-                    new List<string> { "Weinfelden", "Romanshorn", "St. Gallen", "Wil" }) },
-                
-                { "St. Gallen", (false, false, 3, MorningAction.IgnoreFirstAppeal, AllDayAction.AddTwoPips, 
+                { "Weinfelden", (false, false, 3, MorningAction.IgnoreFirstAppeal, AllDayAction.AddTwoPips,
+                    new List<string> { "Kreuzlingen", "Amrisvil", "Wil" }) },
+
+                { "Amrisvil", (false, false, 3, MorningAction.AllAttractionsAppeal, AllDayAction.RerollTourist,
+                    new List<string> { "Weinfelden", "St. Gallen" }) },
+
+                { "St. Gallen", (false, false, 3, MorningAction.IgnoreFirstAppeal, AllDayAction.AddTwoPips,
                     new List<string> { "Amrisvil", "Rorschach", "Wil" }) },
-                
-                { "Wil", (false, false, 3, MorningAction.IncreaseValue, AllDayAction.BuildAttraction, 
-                    new List<string> { "St. Gallen", "Amrisvil" }) },
-                
-                { "Dornbirn", (false, false, 3, MorningAction.AllAttractionsAppeal, AllDayAction.BuildAttraction, 
-                    new List<string> { "Bregenz" }) }
+
+                { "Wil", (false, false, 3, MorningAction.IncreaseValue, AllDayAction.BuildAttraction,
+                    new List<string> { "Weinfelden", "St. Gallen" }) },
+
+                { "Dornbirn", (false, false, 3, MorningAction.AllAttractionsAppeal, AllDayAction.BuildAttraction,
+                    new List<string> { "Hard", "Bregenz" }) }
             };
 
             // Create city objects
