@@ -201,9 +201,17 @@ namespace BodenseeTourismus.UI
             // Update turn buttons
             bool busSelected = _currentTurnContext?.SelectedBus != null;
             bool hasMoved = _currentTurnContext?.HasMoved ?? false;
+            bool hasUsedMorningAction = _currentTurnContext?.UsedMorningAction != null;
 
-            UseMorningActionButton.IsEnabled = busSelected && _currentTurnContext?.UsedMorningAction == null && !hasMoved;
-            MoveButton.IsEnabled = busSelected && _currentTurnContext?.UsedMorningAction != null;
+            // Morning action: both buttons enabled only if bus selected, not moved, and action not yet used
+            bool canDoMorningAction = busSelected && !hasUsedMorningAction && !hasMoved;
+            UseMorningActionButton.IsEnabled = canDoMorningAction;
+            SkipMorningActionButton.IsEnabled = canDoMorningAction;
+
+            // Move: enabled after morning action phase is complete
+            MoveButton.IsEnabled = busSelected && hasUsedMorningAction;
+
+            // All-day action: can use after bus is positioned
             UseAllDayActionButton.IsEnabled = busSelected && !string.IsNullOrEmpty(_currentTurnContext?.SelectedBus?.CurrentCity);
 
             // Can only end turn after moving the bus (actions are optional)
@@ -269,7 +277,7 @@ namespace BodenseeTourismus.UI
         private void UseMorningActionButton_Click(object sender, RoutedEventArgs e)
         {
             if (_currentTurnContext?.SelectedBus == null) return;
-            
+
             var city = _gameState.Board.GetCity(_currentTurnContext.SelectedBus.CurrentCity);
             if (!city.MorningAction.HasValue)
             {
@@ -278,9 +286,9 @@ namespace BodenseeTourismus.UI
                 UpdateUI();
                 return;
             }
-            
+
             _currentTurnContext.UsedMorningAction = city.MorningAction.Value;
-            
+
             switch (city.MorningAction.Value)
             {
                 case MorningAction.IncreaseValue:
@@ -299,13 +307,22 @@ namespace BodenseeTourismus.UI
                     Log("Using All Attractions Appeal");
                     break;
             }
-            
+
             _analytics.LogAction(_gameState.CurrentPlayer.Id, _gameState.CurrentPlayer.Name,
                 ActionType.UseMorningAction, new Dictionary<string, object>
                 {
                     { "Action", city.MorningAction.Value }
                 });
-            
+
+            UpdateUI();
+        }
+
+        private void SkipMorningActionButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (_currentTurnContext?.SelectedBus == null) return;
+
+            _currentTurnContext.UsedMorningAction = MorningAction.None;
+            Log("Skipped morning action");
             UpdateUI();
         }
 
