@@ -200,10 +200,15 @@ namespace BodenseeTourismus.UI
             
             // Update turn buttons
             bool busSelected = _currentTurnContext?.SelectedBus != null;
-            UseMorningActionButton.IsEnabled = busSelected && _currentTurnContext?.UsedMorningAction == null && !(_currentTurnContext?.HasMoved ?? false);
+            bool hasMoved = _currentTurnContext?.HasMoved ?? false;
+            bool hasUsedAllDayAction = _currentTurnContext?.UsedAllDayAction ?? false;
+
+            UseMorningActionButton.IsEnabled = busSelected && _currentTurnContext?.UsedMorningAction == null && !hasMoved;
             MoveButton.IsEnabled = busSelected && _currentTurnContext?.UsedMorningAction != null;
             UseAllDayActionButton.IsEnabled = busSelected && !string.IsNullOrEmpty(_currentTurnContext?.SelectedBus?.CurrentCity);
-            EndTurnButton.IsEnabled = busSelected;
+
+            // Can only end turn after moving OR using an all-day action (which can substitute for movement)
+            EndTurnButton.IsEnabled = busSelected && (hasMoved || hasUsedAllDayAction);
 
             // Update board visualizations
             UpdateBusVisuals();
@@ -682,7 +687,14 @@ namespace BodenseeTourismus.UI
         private void EndTurnButton_Click(object sender, RoutedEventArgs e)
         {
             if (_currentTurnContext == null) return;
-            
+
+            // Validate that player has moved or used an all-day action
+            if (!_currentTurnContext.HasMoved && !_currentTurnContext.UsedAllDayAction)
+            {
+                MessageBox.Show("You must move your bus or use an all-day action before ending your turn!", "Cannot End Turn");
+                return;
+            }
+
             // Refill
             _engine.Refill(_currentTurnContext);
             
