@@ -523,13 +523,13 @@ namespace BodenseeTourismus.Analytics
 
             // Actions Header
             lines.Add("=== GAME ACTIONS ===");
-            lines.Add("TurnNumber,PlayerId,PlayerName,ActionType,Timestamp,Details");
+            lines.Add("TurnNumber,PlayerId,PlayerName,ActionType,Details");
 
             // Data
             foreach (var action in _allActions)
             {
                 var details = string.Join(";", action.Details.Select(kvp => $"{kvp.Key}={kvp.Value}"));
-                lines.Add($"{action.TurnNumber},{action.PlayerId},{action.PlayerName},{action.ActionType},{action.Timestamp:yyyy-MM-dd HH:mm:ss},{details}");
+                lines.Add($"{action.TurnNumber},{action.PlayerId},{action.PlayerName},{action.ActionType},{details}");
             }
 
             return string.Join(Environment.NewLine, lines);
