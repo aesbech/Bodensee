@@ -391,11 +391,11 @@ namespace BodenseeTourismus.Analytics
                 .Select(a => a.Id)
                 .ToHashSet();
 
-            var visitActions = _allActions.Where(a => 
+            var visitActions = _allActions.Where(a =>
                 a.ActionType == ActionType.VisitAttraction &&
                 a.PlayerId != playerId &&
-                action.Details.ContainsKey("AttractionId") &&
-                playerAttractions.Contains((int)action.Details["AttractionId"])).ToList();
+                a.Details.ContainsKey("AttractionId") &&
+                playerAttractions.Contains((int)a.Details["AttractionId"])).ToList();
 
             stats.AttractionsVisitedByOthers = visitActions.Count;
             stats.IncomeFromAttractions = visitActions

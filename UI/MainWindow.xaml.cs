@@ -170,8 +170,9 @@ namespace BodenseeTourismus.UI
                     IsGray = a.IsGrayAttraction
                 }).ToList()
             }).ToList();
-            CitiesPanel.ItemsSource = _cityVMs;
-            
+            // TODO: CitiesPanel removed - visual board shows cities instead
+            // CitiesPanel.ItemsSource = _cityVMs;
+
             // Update market panel
             _marketVMs = new List<MarketCategoryViewModel>();
             foreach (AttractionCategory category in Enum.GetValues(typeof(AttractionCategory)))
@@ -196,8 +197,9 @@ namespace BodenseeTourismus.UI
                 };
                 _marketVMs.Add(categoryVM);
             }
-            MarketPanel.ItemsSource = _marketVMs;
-            
+            // TODO: MarketPanel removed - integrate market view into UI
+            // MarketPanel.ItemsSource = _marketVMs;
+
             // Update turn buttons
             bool busSelected = _currentTurnContext?.SelectedBus != null;
             bool hasMoved = _currentTurnContext?.HasMoved ?? false;

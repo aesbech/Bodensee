@@ -36,7 +36,8 @@ namespace BodenseeTourismus.UI
             GrayCostBox.Text = Settings.GrayBaseCost.ToString();
 
             // Load game mechanics
-            UseAppealCheckBox.IsChecked = Settings.UseAppealSystem;
+            // TODO: UseAppealCheckBox removed from UI
+            // UseAppealCheckBox.IsChecked = Settings.UseAppealSystem;
             EnableGrayCheckBox.IsChecked = Settings.EnableGrayAttractions;
 
             // Load gray attraction settings
@@ -89,7 +90,9 @@ namespace BodenseeTourismus.UI
                 Settings.GastronomyBaseCost = ParseInt(GastronomyCostBox.Text, "Gastronomy Cost");
                 Settings.GrayBaseCost = ParseInt(GrayCostBox.Text, "Gray Cost");
 
-                Settings.UseAppealSystem = UseAppealCheckBox.IsChecked ?? true;
+                // TODO: UseAppealCheckBox removed from UI - always use appeal system
+                // Settings.UseAppealSystem = UseAppealCheckBox.IsChecked ?? true;
+                Settings.UseAppealSystem = true;
                 Settings.EnableGrayAttractions = EnableGrayCheckBox.IsChecked ?? true;
 
                 // Gray attraction settings
