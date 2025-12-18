@@ -54,6 +54,9 @@ namespace BodenseeTourismus.UI
             var attractionOptions = new List<AttractionOption>();
             int playerMoney = _gameState.CurrentPlayer.Money;
 
+            // If no city selected yet, show base costs
+            City? selectedCity = SelectedCityName != null ? _gameState.Board.GetCity(SelectedCityName) : null;
+
             // Group attractions by category
             foreach (AttractionCategory category in Enum.GetValues(typeof(AttractionCategory)))
             {
@@ -62,7 +65,31 @@ namespace BodenseeTourismus.UI
 
                 foreach (var attraction in attractionsInCategory)
                 {
-                    int cost = _gameState.Market.GetCost(attraction.Category) - _discount;
+                    int cost;
+                    if (selectedCity != null)
+                    {
+                        // Calculate cost based on selected city
+                        if (attraction.Category == AttractionCategory.Gray)
+                        {
+                            cost = _gameState.Settings.GrayBaseCost;
+                        }
+                        else
+                        {
+                            int baseCost = _gameState.Settings.GetBaseCost(attraction.Category);
+                            int sameCategoryCount = selectedCity.Attractions.Count(a =>
+                                a.OwnerId.HasValue &&
+                                a.Category != AttractionCategory.Gray &&
+                                (a.Category == attraction.Category || selectedCity.IsPort));
+                            cost = baseCost + sameCategoryCount;
+                        }
+                        cost -= _discount;
+                    }
+                    else
+                    {
+                        // Show base cost if no city selected
+                        cost = _gameState.Settings.GetBaseCost(attraction.Category) - _discount;
+                    }
+
                     bool canAfford = playerMoney >= cost;
 
                     var option = new AttractionOption
@@ -99,6 +126,7 @@ namespace BodenseeTourismus.UI
             if (sender is Button button && button.Tag is string cityName)
             {
                 SelectedCityName = cityName;
+                LoadAttractions(); // Reload attractions with updated costs for selected city
                 UpdateBuildButton();
             }
         }
