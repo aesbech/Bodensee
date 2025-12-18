@@ -467,31 +467,35 @@
                         
                         <Separator Margin="0,15"/>
                         
+                        <!-- Actions (Morning, All-Day, Gray Buildings) -->
+                        <TextBlock Text="2. Available Actions:" FontWeight="Bold" Margin="0,10,0,5"/>
+
                         <!-- Morning Action -->
-                        <TextBlock Text="2. Morning Action:" FontWeight="Bold" Margin="0,10,0,5"/>
-                        <Button x:Name="UseMorningActionButton" Content="Use Morning Action"
-                               Click="UseMorningActionButton_Click"
+                        <Button x:Name="MorningActionButton" Content="(Select a bus)"
+                               Click="MorningActionButton_Click"
                                Background="#FF9800" Foreground="White" Height="35" Margin="0,5" IsEnabled="False"/>
+
+                        <!-- All-Day Action -->
+                        <Button x:Name="AllDayActionButton" Content="(Select a bus)"
+                               Click="AllDayActionButton_Click"
+                               Background="#00BCD4" Foreground="White" Height="35" Margin="0,5" IsEnabled="False"/>
+
+                        <!-- Gray Building Actions (dynamically added) -->
+                        <StackPanel x:Name="GrayActionButtonsPanel" Margin="0,0"/>
+
+                        <!-- Skip Morning Action -->
                         <Button x:Name="SkipMorningActionButton" Content="Skip Morning Action"
                                Click="SkipMorningActionButton_Click"
-                               Background="#757575" Foreground="White" Height="30" Margin="0,2" IsEnabled="False"/>
+                               Background="#757575" Foreground="White" Height="30" Margin="0,5" IsEnabled="False"/>
 
                         <Separator Margin="0,15"/>
-                        
+
                         <!-- Move -->
                         <TextBlock Text="3. Move Bus:" FontWeight="Bold" Margin="0,10,0,5"/>
-                        <Button x:Name="MoveButton" Content="Move" 
-                               Click="MoveButton_Click" 
+                        <Button x:Name="MoveButton" Content="Move"
+                               Click="MoveButton_Click"
                                Background="#9C27B0" Foreground="White" Height="35" Margin="0,5" IsEnabled="False"/>
                         <TextBlock Text="(Or click city on board)" FontSize="10" Foreground="Gray" Margin="0,2,0,0"/>
-                        
-                        <Separator Margin="0,15"/>
-                        
-                        <!-- All-Day Action -->
-                        <TextBlock Text="4. All-Day Action:" FontWeight="Bold" Margin="0,10,0,5"/>
-                        <Button x:Name="UseAllDayActionButton" Content="Use All-Day Action" 
-                               Click="UseAllDayActionButton_Click" 
-                               Background="#00BCD4" Foreground="White" Height="35" Margin="0,5" IsEnabled="False"/>
                         
                         <Separator Margin="0,15"/>
                         

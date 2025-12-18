@@ -203,16 +203,54 @@ namespace BodenseeTourismus.UI
             bool hasMoved = _currentTurnContext?.HasMoved ?? false;
             bool hasUsedMorningAction = _currentTurnContext?.UsedMorningAction != null;
 
-            // Morning action: both buttons enabled only if bus selected, not moved, and action not yet used
+            if (busSelected)
+            {
+                var currentCity = _gameState.Board.GetCity(_currentTurnContext.SelectedBus.CurrentCity);
+
+                // Update morning action button text and availability
+                if (currentCity.MorningAction.HasValue)
+                {
+                    MorningActionButton.Content = GetActionDisplayName(currentCity.MorningAction.Value);
+                    MorningActionButton.Visibility = Visibility.Visible;
+                }
+                else
+                {
+                    MorningActionButton.Content = "(No morning action)";
+                    MorningActionButton.Visibility = Visibility.Collapsed;
+                }
+
+                // Update all-day action button text and availability
+                if (currentCity.AllDayAction.HasValue)
+                {
+                    AllDayActionButton.Content = GetActionDisplayName(currentCity.AllDayAction.Value);
+                    AllDayActionButton.Visibility = Visibility.Visible;
+                }
+                else
+                {
+                    AllDayActionButton.Content = "(No all-day action)";
+                    AllDayActionButton.Visibility = Visibility.Collapsed;
+                }
+
+                // Add gray building action buttons
+                UpdateGrayActionButtons(currentCity);
+            }
+            else
+            {
+                MorningActionButton.Content = "(Select a bus)";
+                AllDayActionButton.Content = "(Select a bus)";
+                MorningActionButton.Visibility = Visibility.Visible;
+                AllDayActionButton.Visibility = Visibility.Visible;
+                GrayActionButtonsPanel.Children.Clear();
+            }
+
+            // Enable/disable logic
             bool canDoMorningAction = busSelected && !hasUsedMorningAction && !hasMoved;
-            UseMorningActionButton.IsEnabled = canDoMorningAction;
+            MorningActionButton.IsEnabled = canDoMorningAction;
+            AllDayActionButton.IsEnabled = canDoMorningAction; // All-day can be used in morning phase
             SkipMorningActionButton.IsEnabled = canDoMorningAction;
 
             // Move: enabled after morning action phase is complete
             MoveButton.IsEnabled = busSelected && hasUsedMorningAction;
-
-            // All-day action: can use after bus is positioned
-            UseAllDayActionButton.IsEnabled = busSelected && !string.IsNullOrEmpty(_currentTurnContext?.SelectedBus?.CurrentCity);
 
             // Can only end turn after moving the bus (actions are optional)
             EndTurnButton.IsEnabled = busSelected && hasMoved;
@@ -274,7 +312,77 @@ namespace BodenseeTourismus.UI
             UpdateUI();
         }
 
-        private void UseMorningActionButton_Click(object sender, RoutedEventArgs e)
+        private string GetActionDisplayName(MorningAction action)
+        {
+            return action switch
+            {
+                MorningAction.IncreaseValue => "💰 Increase Value (+€1)",
+                MorningAction.IgnoreFirstAppeal => "🚫 Ignore First Appeal",
+                MorningAction.Ferry => "⛴️ Ferry (to any port)",
+                MorningAction.AllAttractionsAppeal => "🌟 All Attractions Appeal",
+                MorningAction.None => "(Skip)",
+                _ => action.ToString()
+            };
+        }
+
+        private string GetActionDisplayName(AllDayAction action)
+        {
+            return action switch
+            {
+                AllDayAction.BuildAttraction => "🏗️ Build Attraction",
+                AllDayAction.BuildAttractionDiscount => "🏗️ Contractor (Build with Discount)",
+                AllDayAction.AddTwoPips => "💵 Add 2 Pips (any tourist)",
+                AllDayAction.AddTwoPipsGreen => "💵 Add 2 Pips (Green tourist)",
+                AllDayAction.AddTwoPipsBlue => "💵 Add 2 Pips (Blue tourist)",
+                AllDayAction.AddTwoPipsRed => "💵 Add 2 Pips (Red tourist)",
+                AllDayAction.AddTwoPipsYellow => "💵 Add 2 Pips (Yellow tourist)",
+                AllDayAction.RerollTourist => "🎲 Casino (Reroll tourist)",
+                AllDayAction.GiveTour => "🎫 Give Extra Tour",
+                AllDayAction.BusDispatch => "🚌 Dispatch Another Bus",
+                _ => action.ToString()
+            };
+        }
+
+        private void UpdateGrayActionButtons(City city)
+        {
+            GrayActionButtonsPanel.Children.Clear();
+
+            var grayAttractions = city.Attractions
+                .Where(a => a.IsGrayAttraction && a.OwnerId == _gameState.CurrentPlayer.Id && a.GrantedAction.HasValue)
+                .ToList();
+
+            foreach (var attraction in grayAttractions)
+            {
+                var button = new Button
+                {
+                    Content = $"🏢 {GetActionDisplayName(attraction.GrantedAction.Value)}",
+                    Background = new SolidColorBrush(Color.FromRgb(158, 158, 158)),
+                    Foreground = Brushes.White,
+                    Height = 35,
+                    Margin = new Thickness(0, 5),
+                    Tag = attraction.GrantedAction.Value
+                };
+
+                button.Click += GrayActionButton_Click;
+                GrayActionButtonsPanel.Children.Add(button);
+            }
+        }
+
+        private void GrayActionButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (_currentTurnContext?.SelectedBus == null) return;
+
+            var button = sender as Button;
+            var action = (AllDayAction)button.Tag;
+
+            // Execute the gray building action
+            ExecuteAllDayAction(action);
+
+            _currentTurnContext.UsedAllDayAction = true;
+            UpdateUI();
+        }
+
+        private void MorningActionButton_Click(object sender, RoutedEventArgs e)
         {
             if (_currentTurnContext?.SelectedBus == null) return;
 
@@ -282,8 +390,6 @@ namespace BodenseeTourismus.UI
             if (!city.MorningAction.HasValue)
             {
                 MessageBox.Show("No morning action available in this city!", "No Action");
-                _currentTurnContext.UsedMorningAction = MorningAction.None;
-                UpdateUI();
                 return;
             }
 
@@ -315,6 +421,77 @@ namespace BodenseeTourismus.UI
                 });
 
             UpdateUI();
+        }
+
+        private void AllDayActionButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (_currentTurnContext?.SelectedBus == null) return;
+
+            var city = _gameState.Board.GetCity(_currentTurnContext.SelectedBus.CurrentCity);
+            if (!city.AllDayAction.HasValue)
+            {
+                MessageBox.Show("No all-day action available in this city!", "No Action");
+                return;
+            }
+
+            ExecuteAllDayAction(city.AllDayAction.Value);
+
+            // If used during morning phase (before moving), mark that a morning-phase action was taken
+            if (!_currentTurnContext.HasMoved)
+            {
+                _currentTurnContext.UsedMorningAction = MorningAction.None;
+            }
+
+            _currentTurnContext.UsedAllDayAction = true;
+            UpdateUI();
+        }
+
+        private void ExecuteAllDayAction(AllDayAction action)
+        {
+            var city = _gameState.Board.GetCity(_currentTurnContext.SelectedBus.CurrentCity);
+
+            switch (action)
+            {
+                case AllDayAction.BuildAttraction:
+                    HandleBuildAttraction(city);
+                    break;
+
+                case AllDayAction.RerollTourist:
+                    HandleRerollTourist();
+                    break;
+
+                case AllDayAction.AddTwoPips:
+                    HandleAddTwoPips(null); // Any color
+                    break;
+
+                case AllDayAction.AddTwoPipsGreen:
+                    HandleAddTwoPips(AttractionCategory.Nature);
+                    break;
+
+                case AllDayAction.AddTwoPipsBlue:
+                    HandleAddTwoPips(AttractionCategory.Water);
+                    break;
+
+                case AllDayAction.AddTwoPipsRed:
+                    HandleAddTwoPips(AttractionCategory.Culture);
+                    break;
+
+                case AllDayAction.AddTwoPipsYellow:
+                    HandleAddTwoPips(AttractionCategory.Gastronomy);
+                    break;
+
+                case AllDayAction.GiveTour:
+                    HandleGiveTour();
+                    break;
+
+                case AllDayAction.BusDispatch:
+                    HandleBusDispatch();
+                    break;
+
+                case AllDayAction.BuildAttractionDiscount:
+                    HandleContractor(city);
+                    break;
+            }
         }
 
         private void SkipMorningActionButton_Click(object sender, RoutedEventArgs e)
