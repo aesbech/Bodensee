@@ -1544,47 +1544,6 @@ namespace BodenseeTourismus.UI
     }
 
     // Simple dialogs
-    public class DestinationDialog : Window
-    {
-        public string SelectedDestination { get; private set; }
-
-        public DestinationDialog(List<string> destinations)
-        {
-            Title = "Select Destination";
-            Width = 300;
-            Height = 400;
-            WindowStartupLocation = WindowStartupLocation.CenterOwner;
-
-            var listBox = new ListBox { Margin = new Thickness(10) };
-            foreach (var dest in destinations)
-            {
-                listBox.Items.Add(dest);
-            }
-
-            var button = new Button
-            {
-                Content = "Select",
-                Margin = new Thickness(10),
-                Height = 30
-            };
-            button.Click += (s, e) =>
-            {
-                if (listBox.SelectedItem != null)
-                {
-                    SelectedDestination = listBox.SelectedItem.ToString();
-                    DialogResult = true;
-                }
-            };
-
-            var panel = new DockPanel();
-            DockPanel.SetDock(button, Dock.Bottom);
-            panel.Children.Add(button);
-            panel.Children.Add(listBox);
-
-            Content = panel;
-        }
-    }
-
     public class TouristSelectionDialog : Window
     {
         public Tourist SelectedTourist { get; private set; }
