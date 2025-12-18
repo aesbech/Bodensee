@@ -361,7 +361,7 @@ namespace BodenseeTourismus.UI
                     Background = new SolidColorBrush(Color.FromRgb(158, 158, 158)),
                     Foreground = Brushes.White,
                     Height = 35,
-                    Margin = new Thickness(0, 5),
+                    Margin = new Thickness(0, 5, 0, 5),
                     Tag = attraction.GrantedAction.Value
                 };
 
@@ -1135,7 +1135,7 @@ namespace BodenseeTourismus.UI
                 .Concat(_gameState.Market.AvailableAttractions.Values.SelectMany(list => list))
                 .Concat(_gameState.Board.Cities.Values.SelectMany(c => c.Attractions))
                 .Distinct()
-                .Select(a => new AttractionEditModel
+                .Select(a => new BodenseeTourismus.UI.AttractionModel
                 {
                     Id = a.Id,
                     NameEnglish = a.NameEnglish,
@@ -1147,7 +1147,7 @@ namespace BodenseeTourismus.UI
                     GrantedAction = a.GrantedAction
                 }).ToList();
 
-            var editor = new AttractionEditorWindow(currentAttractions);
+            var editor = new AttractionEditorWindow();
             if (editor.ShowDialog() == true)
             {
                 // Save edited attractions for next game
