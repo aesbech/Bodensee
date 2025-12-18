@@ -66,34 +66,40 @@ namespace BodenseeTourismus.Engine
         // Get valid destination cities for a bus
         public List<string> GetValidDestinations(Bus bus, TurnContext context)
         {
-            var destinations = new List<string>();
+            var routeInfo = GetValidDestinationsWithRoutes(bus, context);
+            return routeInfo.Keys.ToList();
+        }
+
+        public Dictionary<string, List<string>> GetValidDestinationsWithRoutes(Bus bus, TurnContext context)
+        {
+            var routes = new Dictionary<string, List<string>>();
             var city = _state.Board.GetCity(bus.CurrentCity);
-            if (city == null) return destinations;
+            if (city == null) return routes;
 
             var busCategories = bus.GetCategories();
 
             if (context.UsedMorningAction == MorningAction.Ferry && city.IsPort)
             {
-                // Can move to any other port
+                // Can move to any other port (no pass-through cities for ferry)
                 foreach (var portCity in _state.Board.Cities.Values.Where(c => c.IsPort && c.Name != city.Name))
                 {
                     if (!_state.Board.Buses.Any(b => b.Id != bus.Id && b.CurrentCity == portCity.Name))
                     {
-                        destinations.Add(portCity.Name);
+                        routes[portCity.Name] = new List<string>(); // Direct ferry, no pass-through
                     }
                 }
-                return destinations;
+                return routes;
             }
 
-            // Normal movement along routes
+            // Normal movement along routes - track paths
             var visited = new HashSet<string> { bus.CurrentCity };
-            var queue = new Queue<string>();
-            queue.Enqueue(bus.CurrentCity);
+            var queue = new Queue<(string City, List<string> Path)>();
+            queue.Enqueue((bus.CurrentCity, new List<string>()));
             bool firstAppealFound = false;
 
             while (queue.Count > 0)
             {
-                var currentCityName = queue.Dequeue();
+                var (currentCityName, path) = queue.Dequeue();
                 var currentCity = _state.Board.GetCity(currentCityName);
 
                 foreach (var nextCityName in currentCity.Connections)
@@ -125,23 +131,28 @@ namespace BodenseeTourismus.Engine
                         {
                             firstAppealFound = true;
                             visited.Add(nextCityName);
-                            queue.Enqueue(nextCityName);
+                            var newPath = new List<string>(path);
+                            newPath.Add(nextCityName + " (ignored appeal)");
+                            queue.Enqueue((nextCityName, newPath));
                             continue;
                         }
 
-                        destinations.Add(nextCityName);
+                        // This is a valid destination - record the path
+                        routes[nextCityName] = new List<string>(path);
                         // Don't continue past this city
                     }
                     else
                     {
                         // No appeal, can pass through
                         visited.Add(nextCityName);
-                        queue.Enqueue(nextCityName);
+                        var newPath = new List<string>(path);
+                        newPath.Add(nextCityName);
+                        queue.Enqueue((nextCityName, newPath));
                     }
                 }
             }
 
-            return destinations;
+            return routes;
         }
 
         // Execute a tour for tourists on a bus

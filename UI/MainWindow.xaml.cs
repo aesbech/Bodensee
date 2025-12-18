@@ -515,17 +515,17 @@ namespace BodenseeTourismus.UI
         private void MoveButton_Click(object sender, RoutedEventArgs e)
         {
             if (_currentTurnContext?.SelectedBus == null) return;
-            
-            var destinations = _engine.GetValidDestinations(_currentTurnContext.SelectedBus, _currentTurnContext);
-            
-            if (!destinations.Any())
+
+            var routeInfo = _engine.GetValidDestinationsWithRoutes(_currentTurnContext.SelectedBus, _currentTurnContext);
+
+            if (!routeInfo.Any())
             {
                 MessageBox.Show("No valid destinations!", "Cannot Move");
                 return;
             }
-            
-            // Show destination selection dialog
-            var dialog = new DestinationDialog(destinations);
+
+            // Show destination selection dialog with pass-through cities
+            var dialog = new DestinationDialog(routeInfo);
             if (dialog.ShowDialog() == true)
             {
                 var destination = dialog.SelectedDestination;
