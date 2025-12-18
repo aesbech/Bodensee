@@ -69,7 +69,7 @@ namespace BodenseeTourismus.UI
         private void StartNewGame()
         {
             // Configure players (you can add a setup dialog)
-            var playerConfigs = new List<(string Name, bool IsAI, string AIStrategy)>
+            var playerConfigs = new List<(string Name, bool IsAI, string? AIStrategy)>
             {
                 ("Player 1", false, null),
                 ("AI - Aggressive", true, "Aggressive"),

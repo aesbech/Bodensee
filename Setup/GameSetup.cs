@@ -14,7 +14,7 @@ namespace BodenseeTourismus.Setup
             _random = seed.HasValue ? new Random(seed.Value) : new Random();
         }
 
-        public GameState CreateGame(List<(string Name, bool IsAI, string AIStrategy)> playerConfigs, GameSettings settings = null)
+        public GameState CreateGame(List<(string Name, bool IsAI, string? AIStrategy)> playerConfigs, GameSettings? settings = null)
         {
             var state = new GameState { Random = _random };
             
