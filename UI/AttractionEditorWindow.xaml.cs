@@ -110,7 +110,7 @@ namespace BodenseeTourismus.UI
                 _selectedAttraction.NameEnglish = EditNameEnglish.Text;
                 _selectedAttraction.NameGerman = EditNameGerman.Text;
                 _selectedAttraction.Value = int.Parse(EditValue.Text);
-                _selectedAttraction.Priority = (AttractPriority)int.Parse(EditPriority.Text);
+                _selectedAttraction.Priority = int.Parse(EditPriority.Text);
                 _selectedAttraction.PaysBonusEuro = EditBonusEuro.IsChecked == true;
 
                 if (EditGrayEffect.SelectedIndex > 0 && EditGrayEffect.SelectedItem is ComboBoxItem item)
@@ -189,7 +189,7 @@ namespace BodenseeTourismus.UI
                 NameEnglish = $"New {category} Attraction",
                 NameGerman = $"Neue {category} Attraktion",
                 Value = 1,
-                Priority = AttractPriority.Medium
+                Priority = 2  // Medium priority (1=Low, 2=Medium, 3=High)
             };
 
             _attractions.Add(newAttraction);
@@ -237,7 +237,7 @@ namespace BodenseeTourismus.UI
         public string NameEnglish { get; set; } = "";
         public string NameGerman { get; set; } = "";
         public int Value { get; set; }
-        public AttractPriority Priority { get; set; }
+        public int Priority { get; set; }
         public bool PaysBonusEuro { get; set; }
         public AllDayAction? GrantedAction { get; set; }
     }
