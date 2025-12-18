@@ -526,7 +526,7 @@ namespace BodenseeTourismus.UI
 
             // Show destination selection dialog with pass-through cities
             var dialog = new DestinationDialog(routeInfo);
-            if (dialog.ShowDialog() == true)
+            if (dialog.ShowDialog() == true && !string.IsNullOrEmpty(dialog.SelectedDestination))
             {
                 var destination = dialog.SelectedDestination;
                 _currentTurnContext.SelectedBus.CurrentCity = destination;
