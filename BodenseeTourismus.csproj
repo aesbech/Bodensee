@@ -9,6 +9,9 @@
     <AssemblyName>BodenseeTourismus</AssemblyName>
   </PropertyGroup>
 
+  <ItemGroup>
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+  </ItemGroup>
 
   <ItemGroup>
     <Resource Include="Resources\Bodensee_v__0_10.png" />
