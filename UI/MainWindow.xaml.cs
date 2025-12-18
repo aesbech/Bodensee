@@ -17,18 +17,18 @@ namespace BodenseeTourismus.UI
 {
     public partial class MainWindow : Window
     {
-        private GameState _gameState;
-        private GameEngine _engine;
-        private GameAnalytics _analytics;
-        private AIController _aiController;
-        private TurnContext _currentTurnContext;
-        private GameSettings _gameSettings;
-        
+        private GameState _gameState = null!;
+        private GameEngine _engine = null!;
+        private GameAnalytics _analytics = null!;
+        private AIController _aiController = null!;
+        private TurnContext _currentTurnContext = null!;
+        private GameSettings _gameSettings = null!;
+
         // View models for data binding
-        private List<PlayerViewModel> _playerVMs;
-        private List<BusViewModel> _busVMs;
-        private List<CityViewModel> _cityVMs;
-        private List<MarketCategoryViewModel> _marketVMs;
+        private List<PlayerViewModel> _playerVMs = null!;
+        private List<BusViewModel> _busVMs = null!;
+        private List<CityViewModel> _cityVMs = null!;
+        private List<MarketCategoryViewModel> _marketVMs = null!;
 
         // City coordinates for board visualization (Canvas positions + offset for centering)
         private readonly Dictionary<string, (double X, double Y)> _cityCoordinates = new Dictionary<string, (double, double)>
