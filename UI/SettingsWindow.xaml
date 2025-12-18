@@ -116,7 +116,7 @@
             </GroupBox>
             
             <!-- Language & Refill Settings -->
-            <GroupBox Header="Language & Refill Settings" Padding="10" Margin="0,0,0,15">
+            <GroupBox Header="Language &amp; Refill Settings" Padding="10" Margin="0,0,0,15">
                 <StackPanel>
                     <TextBlock Text="Attraction Names:" FontWeight="Bold" Margin="0,5,0,5"/>
                     <RadioButton x:Name="LanguageEnglishRadio" Content="English"
