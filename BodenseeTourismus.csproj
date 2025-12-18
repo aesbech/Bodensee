@@ -19,6 +19,11 @@
     <None Include="LICENSE" />
     <None Include=".gitignore" />
     <None Include="GITHUB_UPLOAD_GUIDE.md" />
+    <None Include="UI\MainWindow_CodeBehind_Additions.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Remove="UI\MainWindow_CodeBehind_Additions.cs" />
   </ItemGroup>
 
   <ItemGroup>
