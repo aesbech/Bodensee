@@ -289,9 +289,10 @@ namespace BodenseeTourismus.UI
         private void SelectBusButton_Click(object sender, RoutedEventArgs e)
         {
             if (_currentTurnContext == null || _gameState.CurrentPlayer.IsAI) return;
-            
+
             var button = sender as Button;
-            int busId = (int)button.Tag;
+            if (button?.Tag == null) return;
+            int busId = int.Parse(button.Tag.ToString()!);
             var bus = _gameState.Board.Buses.FirstOrDefault(b => b.Id == busId);
             
             if (bus == null || !_engine.CanBusMove(bus))
