@@ -257,8 +257,8 @@ namespace BodenseeTourismus.UI
             bool canDoAllDayAction = busSelected && !hasUsedAllDayAction && (canDoMorningAction || hasMoved);
             AllDayActionButton.IsEnabled = canDoAllDayAction;
 
-            // Move: enabled after morning action phase is complete
-            MoveButton.IsEnabled = busSelected && hasUsedMorningAction;
+            // Move: enabled after morning action phase is complete, but BEFORE actually moving (can only move once)
+            MoveButton.IsEnabled = busSelected && hasUsedMorningAction && !hasMoved;
 
             // Can only end turn after moving the bus (actions are optional)
             EndTurnButton.IsEnabled = busSelected && hasMoved;
