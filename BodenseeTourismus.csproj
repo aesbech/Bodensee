@@ -9,34 +9,6 @@
     <AssemblyName>BodenseeTourismus</AssemblyName>
   </PropertyGroup>
 
-  <ItemGroup>
-    <Compile Include="Core\GameModels.cs" />
-    <Compile Include="Engine\GameEngine.cs" />
-    <Compile Include="Setup\GameSetup.cs" />
-    <Compile Include="UI\MainWindow.xaml.cs">
-      <DependentUpon>MainWindow.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="UI\SettingsWindow.xaml.cs">
-      <DependentUpon>SettingsWindow.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="AI\AIController.cs" />
-    <Compile Include="Analytics\GameAnalytics.cs" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Page Include="UI\MainWindow.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Include="UI\SettingsWindow.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Include="UI\AttractionEditorWindow.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
-  </ItemGroup>
 
   <ItemGroup>
     <Resource Include="Resources\Bodensee_v__0_10.png" />
