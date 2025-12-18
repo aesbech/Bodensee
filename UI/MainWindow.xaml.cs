@@ -246,10 +246,16 @@ namespace BodenseeTourismus.UI
             }
 
             // Enable/disable logic
+            bool hasUsedAllDayAction = _currentTurnContext?.UsedAllDayAction ?? false;
+
+            // Morning action: only enabled before moving
             bool canDoMorningAction = busSelected && !hasUsedMorningAction && !hasMoved;
             MorningActionButton.IsEnabled = canDoMorningAction;
-            AllDayActionButton.IsEnabled = canDoMorningAction; // All-day can be used in morning phase
             SkipMorningActionButton.IsEnabled = canDoMorningAction;
+
+            // All-day action: enabled before moving OR after moving (if not used yet)
+            bool canDoAllDayAction = busSelected && !hasUsedAllDayAction && (canDoMorningAction || hasMoved);
+            AllDayActionButton.IsEnabled = canDoAllDayAction;
 
             // Move: enabled after morning action phase is complete
             MoveButton.IsEnabled = busSelected && hasUsedMorningAction;
@@ -619,20 +625,22 @@ namespace BodenseeTourismus.UI
 
         private void HandleBuildAttraction(City city)
         {
-            var buildDialog = new BuildAttractionDialog(_gameState, city.Name, 0);
-            if (buildDialog.ShowDialog() == true)
+            // Let player select both city and attraction
+            var buildDialog = new BuildAttractionDialog(_gameState, 0);
+            if (buildDialog.ShowDialog() == true && buildDialog.SelectedCityName != null && buildDialog.SelectedAttraction != null)
             {
                 var attraction = buildDialog.SelectedAttraction;
-                if (_engine.BuildAttraction(attraction, city.Name, 0))
+                var cityName = buildDialog.SelectedCityName;
+                if (_engine.BuildAttraction(attraction, cityName, 0))
                 {
                     string attractionName = attraction.GetName(_gameState.Settings.Language);
-                    Log($"Built {attractionName} in {city.Name}");
+                    Log($"Built {attractionName} in {cityName}");
                     _analytics.LogAction(_gameState.CurrentPlayer.Id, _gameState.CurrentPlayer.Name,
                         ActionType.BuildAttraction, new Dictionary<string, object>
                         {
                             { "AttractionId", attraction.Id },
                             { "Category", attraction.Category },
-                            { "City", city.Name }
+                            { "City", cityName }
                         });
 
                     // Refill market
@@ -647,20 +655,22 @@ namespace BodenseeTourismus.UI
         private void HandleContractor(City city)
         {
             int discount = _gameSettings.ContractorDiscountAmount;
-            var buildDialog = new BuildAttractionDialog(_gameState, city.Name, discount);
-            if (buildDialog.ShowDialog() == true)
+            // Let player select both city and attraction with discount
+            var buildDialog = new BuildAttractionDialog(_gameState, discount);
+            if (buildDialog.ShowDialog() == true && buildDialog.SelectedCityName != null && buildDialog.SelectedAttraction != null)
             {
                 var attraction = buildDialog.SelectedAttraction;
-                if (_engine.BuildAttraction(attraction, city.Name, discount))
+                var cityName = buildDialog.SelectedCityName;
+                if (_engine.BuildAttraction(attraction, cityName, discount))
                 {
                     string attractionName = attraction.GetName(_gameState.Settings.Language);
-                    Log($"Built {attractionName} in {city.Name} with Contractor discount");
+                    Log($"Built {attractionName} in {cityName} with Contractor discount");
                     _analytics.LogAction(_gameState.CurrentPlayer.Id, _gameState.CurrentPlayer.Name,
                         ActionType.BuildAttraction, new Dictionary<string, object>
                         {
                             { "AttractionId", attraction.Id },
                             { "Category", attraction.Category },
-                            { "City", city.Name },
+                            { "City", cityName },
                             { "ContractorDiscount", true }
                         });
 
